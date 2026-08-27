@@ -897,7 +897,7 @@ function pixup_http($method, $url, $body = null, $headers = array())
 
     $response   = curl_exec($ch);
     $httpStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    @curl_close($ch);
 
     if ($response === false) return false;
 
