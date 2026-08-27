@@ -19,19 +19,11 @@
       "dest": "/images/$1"
     },
     {
-      "src": "/api/admin\\.php(.*)",
-      "dest": "/api/admin.php$1"
-    },
-    {
-      "src": "/admin/api\\.php/(.*)",
-      "dest": "/api/admin.php/$1"
-    },
-    {
-      "src": "/admin/api\\.php$",
+      "src": "/admin/api\\.php(.*)",
       "dest": "/api/admin.php"
     },
     {
-      "src": "/api/(.*)",
+      "src": "/api/((?!admin\\.php).*)$",
       "dest": "/api/index.php"
     },
     {
