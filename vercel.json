@@ -16,11 +16,15 @@
       "dest": "/images/$1"
     },
     {
+      "src": "/api/admin\\.php(.*)",
+      "dest": "/api/admin.php"
+    },
+    {
       "src": "/admin/api\\.php(.*)",
       "dest": "/api/admin.php"
     },
     {
-      "src": "/api/((?!admin\\.php).*)$",
+      "src": "/api/(.*)",
       "dest": "/api/index.php"
     },
     {
