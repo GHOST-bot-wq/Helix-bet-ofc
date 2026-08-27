@@ -9,7 +9,7 @@ define('DB_NAME', getenv('DB_NAME') ?: 'bavwjmiclz2ptlzhy8nr');
 define('DB_USER', getenv('DB_USER') ?: 'u99oi9uyvl3yn5mv');
 define('DB_PASS', getenv('DB_PASS') ?: 'u99oi9uyvl3yn5mv');
 define('DB_CHARSET', 'utf8mb4');
-define('APP_ENV', getenv('APP_ENV') ?: 'production'); // troque para 'development' para ver erros
+define('APP_ENV', getenv('APP_ENV') ?: 'development'); // troque para 'development' para ver erros
 
 function db()
 {
