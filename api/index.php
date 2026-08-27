@@ -1204,11 +1204,21 @@ function amplopay_criar_cobranca($valor, $txidLocal, $cpf, $user = null)
     $qrcodeTxt = '';
     $qrcodeImg = '';
 
-    if (!empty($parsed['pix']['code'])) {
+       if (!empty($parsed['pix_copy_paste'])) {
+        $qrcodeTxt = $parsed['pix_copy_paste'];
+    } elseif (!empty($parsed['pix']['code'])) {
         $qrcodeTxt = $parsed['pix']['code'];
     }
-    if (!empty($parsed['pix']['base64'])) {
+
+    if (!empty($parsed['pix_qr_code'])) {
+        $qrcodeImg = $parsed['pix_qr_code'];
+    } elseif (!empty($parsed['pix']['base64'])) {
         $qrcodeImg = $parsed['pix']['base64'];
+    }
+
+    if ($qrcodeImg && strpos($qrcodeImg, 'data:image') !== 0 && @base64_decode($qrcodeImg, true) !== false) {
+        $qrcodeImg = 'data:image/png;base64,' . $qrcodeImg;
+    }
     }
 
     if ($qrcodeTxt && !$qrcodeImg) {
