@@ -24,6 +24,14 @@
       "dest": "/api/admin.php"
     },
     {
+      "src": "/api/index\\.php(.*)",
+      "dest": "/api/index.php"
+    },
+    {
+      "src": "/api/test\\.php(.*)",
+      "dest": "/api/test.php"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/index.php"
     },
