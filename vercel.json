@@ -17,15 +17,23 @@
     },
     {
       "src": "/api/admin\\.php(.*)",
-      "dest": "/api/admin.php"
+      "dest": "/api/admin"
     },
     {
       "src": "/admin/api\\.php(.*)",
-      "dest": "/api/admin.php"
+      "dest": "/api/admin"
     },
     {
-      "src": "/api/([^\\.]*)",
-      "dest": "/api/index.php"
+      "src": "/api/index\\.php(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/api/test\\.php(.*)",
+      "dest": "/api/test"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index"
     },
     {
       "src": "/admin/?$",
@@ -33,7 +41,7 @@
     },
     {
       "src": "/admin/((?!index\\.html|api\\.php|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp)$).*)$",
-      "dest": "/api/admin.php"
+      "dest": "/api/admin"
     },
     {
       "src": "/index\\.php",
