@@ -53,7 +53,11 @@ try {
 
     route($method, $path);
 } catch (PDOException $e) {
-    error_response('Erro interno de banco de dados.', 500);
+    if (defined('APP_ENV') && APP_ENV === 'development') {
+        error_response('Erro de Banco: ' . $e->getMessage(), 500);
+    } else {
+        error_response('Erro interno de banco de dados.', 500);
+    }
 } catch (Exception $e) {
     if (APP_ENV === 'development') {
         error_response($e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine(), 500);
@@ -441,7 +445,7 @@ function game_finalizar()
     $taxa    = (float)cfg('taxa_por_plataforma', 0.1);
     $entrada = (float)$partida['valor_entrada'];
 
-    // Usa o vpp salvo na partida (pode ser individual ou global calculado no inicio)
+    // Usa o vpp salvo na partida (pode ser individual ou global calculated no inicio)
     // Fallback para compatibilidade com partidas antigas (antes da coluna existir)
     $vpp_salvo = (isset($partida['valor_por_plataforma']) && (float)$partida['valor_por_plataforma'] > 0)
         ? (float)$partida['valor_por_plataforma']
@@ -1217,7 +1221,7 @@ function gateway_http($method, $url, $body = null, $headers = array())
         $opts = array(
             'http' => array(
                 'method'        => $method,
-                'header'        => implode("\r\n", $headers),
+                'header'        => implode("\n", $headers),
                 'content'       => $body,
                 'timeout'       => 15,
                 'ignore_errors' => true,
