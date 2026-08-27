@@ -1111,7 +1111,135 @@ function vizzionpay_criar_cobranca($valor, $txidLocal, $cpf, $user)
 /**
  * Cria uma cobrança PIX via AmploPay e retorna qrcode_texto + qrcode_imagem.
  */
+/**
+ * Cria uma cobrança PIX via AmploPay e retorna qrcode_texto + qrcode_imagem.
+ */
 function amplopay_criar_cobranca($valor, $txidLocal, $cpf, $user = null)
+{
+    // Limpa as chaves de espaços em branco acidentais
+    $publicKey    = trim(cfg('amplo_client_id',     ''));
+    $secretKey    = trim(cfg('amplo_client_secret', ''));
+    $baseUrl      = trim(cfg('amplo_url', 'https://app.amplopay.com/api/v1'));
+    $webhookUrl   = cfg('amplo_webhook', '');
+    $siteName     = cfg('site_nome', 'Plataforma');
+
+    if (!$publicKey || !$secretKey) {
+        error_response('Gateway AmploPay nao configurado (Chaves ausentes).', 503);
+    }
+
+    $txidClean = preg_replace('/[^A-Za-z0-9_\-]/', '', $txidLocal);
+
+    // Formata o CPF para o padrão 000.000.000-00 exigido pela AmploPay
+    $cpfLimpo = preg_replace('/\D/', '', $cpf);
+    if (strlen($cpfLimpo) === 11) {
+        $cpfFormatado = substr($cpfLimpo, 0, 3) . '.' . substr($cpfLimpo, 3, 3) . '.' . substr($cpfLimpo, 6, 3) . '-' . substr($cpfLimpo, 9, 2);
+    } else {
+        $cpfFormatado = '000.000.000-00';
+    }
+
+    // Obtém dados reais do usuário se disponíveis
+    $nomeCliente  = (!empty($user['nome'])) ? $user['nome'] : 'Cliente ' . $txidClean;
+    $emailCliente = (!empty($user['email']) && filter_var($user['email'], FILTER_VALIDATE_EMAIL)) 
+                    ? $user['email'] 
+                    : 'cliente_' . $user['id'] . '@gmail.com';
+    
+    // Formata telefone: (XX) 9XXXX-XXXX
+    $telRaw = preg_replace('/\D/', '', (!empty($user['telefone']) ? $user['telefone'] : '11999999999'));
+    if (strlen($telRaw) >= 11) {
+        $telFormatado = '(' . substr($telRaw, 0, 2) . ') ' . substr($telRaw, 2, 5) . '-' . substr($telRaw, 7);
+    } else {
+        $telFormatado = '(11) 99999-9999';
+    }
+
+    // ── 1. Prepara o Payload ──────────────────────────────────────────
+    $payload = array(
+        'identifier'  => $txidClean,
+        'amount'      => (float)number_format($valor, 2, '.', ''),
+        'client'      => array(
+            'name'     => $nomeCliente,
+            'email'    => $emailCliente,
+            'phone'    => $telFormatado,
+            'document' => $cpfFormatado,
+        ),
+    );
+
+    // Valida ou gera dinamicamente a URL do webhook com base no domínio atual
+    if (!filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+        $scheme = 'https';
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $scheme = strtolower(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
+        }
+        $host = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+        $webhookUrl = $host ? $scheme . '://' . $host . '/api/amplopay_webhook.php' : '';
+    }
+
+    if ($webhookUrl && filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+        $payload['callbackUrl'] = $webhookUrl;
+    }
+
+    // ── 2. Faz a requisição direta (Sem OAuth2) ───────────────────────
+    $resp = gateway_http('POST', $baseUrl . '/gateway/pix/receive', json_encode($payload), array(
+        'Content-Type: application/json',
+        'Accept: application/json',
+        'x-public-key: ' . $publicKey,
+        'x-secret-key: ' . $secretKey,
+    ));
+
+    if (!$resp || empty($resp['body'])) {
+        error_response('Falha ao conectar com AmploPay.', 503);
+    }
+
+    $parsed = json_decode($resp['body'], true);
+
+    // ── 3. Verifica Sucesso e Extrai Dados ────────────────────────────
+    if ($resp['status'] < 200 || $resp['status'] >= 300) {
+        $msg = isset($parsed['message']) ? $parsed['message'] : 'Erro desconhecido na AmploPay';
+        
+        // Se houver detalhes do erro, anexa à mensagem para facilitar o diagnóstico
+        if (!empty($parsed['details']) && is_array($parsed['details'])) {
+            $detalhes = json_encode($parsed['details']);
+            $msg .= " (Detalhes: $detalhes)";
+        }
+        
+        error_response('AmploPay: ' . $msg, 503);
+    }
+
+    $qrcodeTxt = '';
+    $qrcodeImg = '';
+
+    if (!empty($parsed['pix_copy_paste'])) {
+        $qrcodeTxt = $parsed['pix_copy_paste'];
+    } elseif (!empty($parsed['pix']['code'])) {
+        $qrcodeTxt = $parsed['pix']['code'];
+    }
+
+    if (!empty($parsed['pix_qr_code'])) {
+        $qrcodeImg = $parsed['pix_qr_code'];
+    } elseif (!empty($parsed['pix']['base64'])) {
+        $qrcodeImg = $parsed['pix']['base64'];
+    }
+
+    if ($qrcodeImg && strpos($qrcodeImg, 'data:image') !== 0 && @base64_decode($qrcodeImg, true) !== false) {
+        $qrcodeImg = 'data:image/png;base64,' . $qrcodeImg;
+    }
+
+    if ($qrcodeTxt && !$qrcodeImg) {
+        $qrcodeImg = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($qrcodeTxt);
+    }
+
+    if (!$qrcodeTxt) {
+        error_response('AmploPay nao retornou o codigo PIX.', 503);
+    }
+
+    $txidFinal = isset($parsed['transactionId']) ? (string)$parsed['transactionId'] : $txidClean;
+
+    return array(
+        'txid'              => $txidFinal,
+        'qrcode_texto'      => $qrcodeTxt,
+        'qrcode_imagem'     => $qrcodeImg,
+        'expiracao_minutos' => 30,
+    );
+}
 {
     // Limpa as chaves de espaços em branco acidentais
     $publicKey    = trim(cfg('amplo_client_id',     ''));
