@@ -1,0 +1,180 @@
+<?php
+// ===================================================================
+//  api/royalbanking_webhook.php — Webhook Royal Banking (Cash In)
+//
+//  Ref: https://web.royalbanking.com.br/documentacao/webhook.php
+//
+//  Payload recebido (Cash In pago):
+//  { "idTransaction": "52fc5262-4063-4900-933b-55e69850", "status": "paid" }
+//
+//  ⚠ A Royal Banking reenvia o webhook até 3x se não receber HTTP 200.
+//  Resposta correta: HTTP 200 + json_encode(200)  (conforme doc oficial)
+//
+//  Compatível com PHP 7.2+
+// ===================================================================
+
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../rollover_helper.php';
+require_once __DIR__ . '/../includes/facebook_pixel.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+// ── Resposta padrão de sucesso (formato exigido pela Royal Banking) ──
+function royal_ok($info = '')
+{
+    http_response_code(200);
+    echo json_encode(200); // formato exato exigido pela doc da Royal Banking
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+// Gateway ativo? Responde 200 silenciosamente para não gerar retentativas
+if (cfg('gateway_ativo', 'manual') !== 'royal') {
+    royal_ok('gateway inativo');
+}
+
+$rawBody = file_get_contents('php://input');
+$data    = json_decode($rawBody, true);
+
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Payload invalido']);
+    exit;
+}
+
+// ── Verifica status: só processa "paid" ──────────────────────────────
+// Conforme doc: status "paid" = Cash In confirmado
+$status = strtolower(trim(isset($data['status']) ? $data['status'] : ''));
+if ($status !== 'paid') {
+    // Outros status (SaquePago, SaqueFalhou) são ignorados neste endpoint
+    royal_ok('status ignorado: ' . $status);
+}
+
+// ── Extrai o idTransaction enviado pela Royal Banking ─────────────────
+// O webhook envia: idTransaction (ID deles, que salvamos como referencia)
+$txid = '';
+foreach (['idTransaction', 'externalReference', 'id', 'transaction_id'] as $k) {
+    if (!empty($data[$k])) { $txid = (string)$data[$k]; break; }
+}
+
+if (!$txid) {
+    royal_log('WEBHOOK_SEM_TXID', $rawBody);
+    // Retorna 200 para não gerar retentativas infinitas
+    royal_ok('txid nao encontrado');
+}
+
+// ── Busca a transação no banco ────────────────────────────────────────
+// A referência salva em fin_deposito() é o idTransaction retornado pela Royal
+$stmt = db()->prepare(
+    'SELECT * FROM transacoes WHERE referencia = ? AND tipo = "deposito" LIMIT 1'
+);
+$stmt->execute([$txid]);
+$tx = $stmt->fetch();
+
+if (!$tx) {
+    royal_log('WEBHOOK_TX_NAO_ENCONTRADA', 'txid=' . $txid);
+    royal_ok('transacao nao encontrada');
+}
+
+// ── Idempotência: já aprovada? ────────────────────────────────────────
+if ($tx['status'] === 'aprovado') {
+    royal_ok('ja processada');
+}
+
+// ── Credita saldo + comissão + bônus ─────────────────────────────────
+$db = db();
+$db->beginTransaction();
+
+try {
+    // 1. Aprova a transação
+    $db->prepare(
+        'UPDATE transacoes SET status = "aprovado", updated_at = NOW() WHERE id = ?'
+    )->execute([$tx['id']]);
+
+    // 2. Credita saldo
+    $db->prepare(
+        'UPDATE usuarios SET saldo = saldo + ? WHERE id = ?'
+    )->execute([$tx['valor'], $tx['usuario_id']]);
+
+    // 3. Comissão de indicação
+    $stmtInd = $db->prepare('SELECT indicado_por FROM usuarios WHERE id = ?');
+    $stmtInd->execute([$tx['usuario_id']]);
+    $rowInd = $stmtInd->fetch();
+
+    if ($rowInd && $rowInd['indicado_por']) {
+        $stmtPerc = $db->prepare('SELECT comissao_perc_individual FROM usuarios WHERE id = ?');
+        $stmtPerc->execute([$rowInd['indicado_por']]);
+        $rowPerc = $stmtPerc->fetch();
+        $percIndividual = ($rowPerc && $rowPerc['comissao_perc_individual'] !== null)
+            ? (float)$rowPerc['comissao_perc_individual'] : null;
+        $perc = $percIndividual !== null ? $percIndividual : (float)cfg('comissao_nivel1_perc', 10);
+
+        if ($perc > 0) {
+            $comissao = round($tx['valor'] * $perc / 100, 2);
+            $db->prepare(
+                'UPDATE usuarios SET saldo_afiliado = saldo_afiliado + ?, total_comissao = total_comissao + ? WHERE id = ?'
+            )->execute([$comissao, $comissao, $rowInd['indicado_por']]);
+            $db->prepare(
+                'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "bonus_indicacao", ?, "aprovado", ?, "Comissao de indicacao")'
+            )->execute([$rowInd['indicado_por'], $comissao, $tx['usuario_id']]);
+            $db->prepare('UPDATE usuarios SET bonus_pago = 1 WHERE id = ?')
+               ->execute([$tx['usuario_id']]);
+        }
+    }
+
+    // 4. Bônus de depósito
+    $bonusPerc = (float)cfg('bonus_deposito_perc', 0);
+    $bonusMin  = (float)cfg('bonus_deposito_minimo', 0);
+    $bonusMax  = (float)cfg('bonus_deposito_maximo', 0);
+    if ($bonusPerc > 0 && $tx['valor'] >= $bonusMin && ($bonusMax === 0.0 || $tx['valor'] <= $bonusMax)) {
+        $bonus = round($tx['valor'] * $bonusPerc / 100, 2);
+        if ($bonus > 0) {
+            $db->prepare('UPDATE usuarios SET saldo = saldo + ? WHERE id = ?')
+               ->execute([$bonus, $tx['usuario_id']]);
+            $db->prepare(
+                'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "ajuste_admin", ?, "aprovado", ?, "Bonus de deposito")'
+            )->execute([$tx['usuario_id'], $bonus, $tx['id']]);
+        }
+    }
+
+    $db->commit();
+
+    // 5. Rollover
+    rollover_criar($tx['usuario_id'], $tx['id'], (float)$tx['valor']);
+
+    // 6. Facebook Pixel
+    if (fb_pixel_ativo()) {
+        fb_event_purchase(
+            (float)$tx['valor'],
+            (int)$tx['usuario_id'],
+            (string)$tx['id']
+        );
+    }
+
+    royal_log('WEBHOOK_APROVADO', 'txid=' . $txid . ' valor=' . $tx['valor'] . ' usuario=' . $tx['usuario_id']);
+
+} catch (Exception $e) {
+    $db->rollBack();
+    royal_log('WEBHOOK_ERRO', $e->getMessage() . ' txid=' . $txid);
+    // Retorna 200 mesmo em erro para evitar loop de retentativas
+    // O erro ficará logado em admin_logs para análise manual
+    royal_ok('erro interno - ver admin_logs');
+}
+
+royal_ok();
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function royal_log($acao, $detalhes)
+{
+    try {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
+        db()->prepare(
+            'INSERT INTO admin_logs (admin_id, acao, detalhes, ip) VALUES (NULL, ?, ?, ?)'
+        )->execute([$acao, substr($detalhes, 0, 1000), $ip]);
+    } catch (Exception $e) {}
+}

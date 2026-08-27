@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HelixWins — Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS & RESET
+============================================================ */
+:root {
+  --bg:         #0a0612;
+  --bg2:        #110d1e;
+  --bg3:        #1a1430;
+  --card:       rgba(255,255,255,0.04);
+  --border:     rgba(255,255,255,0.08);
+  --border2:    rgba(255,255,255,0.14);
+  --purple:     #7c3aed;
+  --purple2:    #9d5cff;
+  --purple3:    #c084fc;
+  --pink:       #f472b6;
+  --pink2:      #ff6b9d;
+  --green:      #00e87a;
+  --green2:     #00c968;
+  --red:        #ff4d6d;
+  --yellow:     #fbbf24;
+  --text:       #f0e8ff;
+  --muted:      rgba(240,232,255,0.45);
+  --muted2:     rgba(240,232,255,0.25);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --shadow:     0 8px 32px rgba(0,0,0,0.5);
+  --glow-p:     0 0 24px rgba(124,58,237,0.35);
+  --glow-g:     0 0 24px rgba(0,232,122,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+button,input,select{font-family:inherit}
+img{max-width:100%;display:block}
+
+/* ============================================================
+   BACKGROUND ATMOSPHERE
+============================================================ */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 800px 600px at 15% 10%, rgba(124,58,237,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at 85% 80%, rgba(244,114,182,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 400px at 60% 30%, rgba(0,232,122,0.06) 0%, transparent 60%);
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+#app{position:relative;z-index:1}
+
+/* ============================================================
+   HEADER
+============================================================ */
+.header{
+  position:sticky;top:0;z-index:200;
+  background:rgba(10,6,18,0.85);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.header-inner{
+  max-width:1280px;margin:0 auto;
+  padding:0 24px;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  color:var(--text);
+}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:var(--glow-p);
+}
+.logo span{background:linear-gradient(90deg,var(--purple3),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.header-right{display:flex;align-items:center;gap:12px}
+
+.saldo-chip{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(0,232,122,0.15),rgba(0,201,104,0.08));
+  border:1px solid rgba(0,232,122,0.25);
+  border-radius:50px;padding:6px 16px;
+  cursor:pointer;transition:all .2s;
+  position:relative;
+}
+.saldo-chip:hover{border-color:rgba(0,232,122,0.5);box-shadow:var(--glow-g)}
+.saldo-chip-label{font-size:10px;color:rgba(0,232,122,0.7);text-transform:uppercase;letter-spacing:.6px;line-height:1}
+.saldo-chip-value{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--green);line-height:1.2}
+
+.saldo-dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  min-width:220px;
+  background:#1a1430;border:1px solid var(--border2);
+  border-radius:var(--radius);
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+  z-index:999;overflow:hidden;
+  animation:dropIn .18s ease both;
+  display:none;
+}
+.saldo-dropdown.open{display:block}
+.sd-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;cursor:pointer;
+  transition:background .15s;font-size:14px;
+  border-bottom:1px solid var(--border);
+}
+.sd-item:last-child{border-bottom:none}
+.sd-item:hover{background:rgba(255,255,255,.05)}
+.sd-icon{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+}
+.sd-icon.green{background:rgba(0,232,122,.15);color:var(--green)}
+.sd-icon.pink{background:rgba(244,114,182,.15);color:var(--pink)}
+.sd-text-label{font-weight:600;color:var(--text)}
+.sd-text-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+.user-chip{
+  display:flex;align-items:center;gap:9px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:50px;padding:5px 14px 5px 6px;
+  cursor:pointer;transition:all .2s;
+  position:relative;
+}
+.user-chip:hover{border-color:var(--border2)}
+.avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#fff;
+}
+.user-name{font-size:13px;font-weight:500;color:var(--text)}
+
+.user-dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  min-width:200px;
+  background:#1a1430;border:1px solid var(--border2);
+  border-radius:var(--radius);
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+  z-index:999;overflow:hidden;
+  animation:dropIn .18s ease both;
+  display:none;
+}
+.user-dropdown.open{display:block}
+.ud-header{padding:16px;border-bottom:1px solid var(--border)}
+.ud-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.ud-email{font-size:12px;color:var(--muted);margin-top:2px}
+.ud-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;cursor:pointer;font-size:13px;
+  transition:background .15s;border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+.ud-item:last-child{border-bottom:none}
+.ud-item:hover{background:rgba(255,255,255,.05)}
+.ud-item.danger{color:var(--red)}
+.ud-item svg{opacity:.6;flex-shrink:0}
+
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ============================================================
+   MAIN LAYOUT
+============================================================ */
+.main{max-width:1280px;margin:0 auto;padding:32px 24px 80px}
+
+/* ============================================================
+   HERO SALDO
+============================================================ */
+.hero{
+  text-align:center;
+  padding:48px 20px 40px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(124,58,237,.18) 0%,rgba(244,114,182,.12) 50%,rgba(0,232,122,.08) 100%);
+  border:1px solid var(--border);
+  border-radius:24px;margin-bottom:28px;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.025' fill-rule='evenodd'%3E%3Cpath d='M20 0L40 20L20 40L0 20z'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.hero-label{
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+.hero-value{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:56px;
+  color:#fff;line-height:1;margin-bottom:28px;
+  text-shadow:0 0 40px rgba(124,58,237,.4);
+}
+.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn-hero{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:50px;
+  font-weight:600;font-size:14px;cursor:pointer;
+  border:none;transition:all .2s;letter-spacing:.2px;
+}
+.btn-hero svg{width:16px;height:16px;flex-shrink:0}
+.btn-dep{background:linear-gradient(135deg,var(--green),var(--green2));color:#062;box-shadow:0 4px 20px rgba(0,232,122,.35)}
+.btn-dep:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,232,122,.5)}
+.btn-saq{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-saq:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}
+.btn-ind{background:rgba(124,58,237,.2);color:var(--purple3);border:1px solid rgba(124,58,237,.3)}
+.btn-ind:hover{background:rgba(124,58,237,.3);transform:translateY(-2px)}
+
+/* ============================================================
+   STATS GRID
+============================================================ */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  margin-bottom:28px;
+}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}}
+
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  transition:border-color .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent,var(--purple)),transparent);
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:12px;
+  background:var(--icon-bg,rgba(124,58,237,.15));
+}
+.stat-value{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:var(--text);line-height:1.1}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-delta{font-size:11px;margin-top:6px;font-weight:600}
+.delta-pos{color:var(--green)}
+.delta-neg{color:var(--red)}
+
+/* ============================================================
+   MAIN GRID
+============================================================ */
+.content-grid{
+  display:grid;grid-template-columns:1fr 380px;gap:24px;
+}
+@media(max-width:1024px){.content-grid{grid-template-columns:1fr}}
+
+/* ============================================================
+   CARDS COMUNS
+============================================================ */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.card-header{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-title svg{opacity:.7}
+.card-body{padding:20px}
+
+/* ============================================================
+   TABS
+============================================================ */
+.tabs{display:flex;gap:4px;padding:4px;background:rgba(0,0,0,.3);border-radius:12px}
+.tab{
+  flex:1;padding:8px 16px;border-radius:9px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;
+}
+.tab.active{background:rgba(124,58,237,.3);color:var(--purple3);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* ============================================================
+   TABELA HISTÓRICO
+============================================================ */
+.table-wrap{overflow-x:auto;margin-top:16px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+thead th{
+  text-align:left;padding:10px 14px;
+  font-size:11px;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;
+}
+tbody td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.025)}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;
+}
+.badge-green{background:rgba(0,232,122,.15);color:var(--green)}
+.badge-yellow{background:rgba(251,191,36,.15);color:var(--yellow)}
+.badge-red{background:rgba(255,77,109,.15);color:var(--red)}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+
+/* ============================================================
+   PERFIL CARD
+============================================================ */
+.profile-card{margin-bottom:20px}
+.profile-top{
+  padding:24px 20px;
+  background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(244,114,182,.12));
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;
+}
+.avatar-lg{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:#fff;
+  box-shadow:0 0 24px rgba(124,58,237,.4);
+}
+.profile-name{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+.profile-id{font-size:12px;color:var(--muted);margin-top:3px}
+.profile-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.profile-info-item{background:var(--bg);padding:14px 16px}
+.pii-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.pii-value{font-size:13px;font-weight:500}
+.btn-edit{
+  width:100%;padding:13px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(157,92,255,.2));
+  color:var(--purple3);font-weight:600;font-size:13px;
+  border-top:1px solid var(--border);transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-edit:hover{background:linear-gradient(135deg,rgba(124,58,237,.5),rgba(157,92,255,.35))}
+
+/* ============================================================
+   QUICK ACTIONS
+============================================================ */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.qa-btn{
+  padding:16px 12px;border-radius:var(--radius-sm);
+  background:var(--card);border:1px solid var(--border);
+  cursor:pointer;transition:all .2s;text-align:center;
+}
+.qa-btn:hover{border-color:var(--border2);transform:translateY(-2px)}
+.qa-icon{font-size:22px;margin-bottom:6px}
+.qa-label{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* ============================================================
+   MODAIS
+============================================================ */
+.modal-bg{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:0;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{
+  background:#14102a;border:1px solid var(--border2);
+  border-radius:24px 24px 0 0;
+  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  transform:translateY(40px);transition:transform .3s cubic-bezier(.34,1.4,.64,1);
+  padding:0 0 40px;
+}
+.modal-bg.open .modal{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border2);margin:12px auto 0}
+.modal-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+.modal-close{
+  width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);
+  border:none;cursor:pointer;color:var(--muted);font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.modal-close:hover{background:rgba(255,255,255,.15);color:var(--text)}
+.modal-body{padding:24px}
+
+/* Amount picker */
+.amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.amount-btn{
+  padding:14px 8px 10px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+  color:var(--text);font-weight:700;font-size:15px;cursor:pointer;
+  transition:all .2s;font-family:'Syne',sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  position:relative;overflow:hidden;
+}
+.amount-btn:hover,.amount-btn.active{
+  background:rgba(124,58,237,.2);border-color:var(--purple2);
+  color:var(--purple3);box-shadow:0 0 12px rgba(124,58,237,.2);
+}
+.amount-btn .bonus-tag{font-size:9px;color:var(--green);font-family:'DM Sans',sans-serif;font-weight:600}
+.amount-btn .preset-label{
+  font-size:9px;font-weight:700;font-family:'DM Sans',sans-serif;
+  padding:2px 7px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);white-space:nowrap;
+}
+.preset-label.label-destaque { background:#7c3aed; color:#fff; }
+.preset-label.label-bonus    { background:#00e87a; color:#000; }
+.preset-label.label-popular  { background:#fbbf24; color:#000; }
+.preset-label.label-vip      { background:#ff4d6d; color:#fff; }
+.preset-label.label-custom   { background:rgba(255,255,255,.15); color:#f0e8ff; }
+
+/* Input field */
+.field-wrap{margin-bottom:16px}
+.field-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.4px}
+.field-input{
+  width:100%;background:rgba(255,255,255,.06);
+  border:1.5px solid var(--border2);border-radius:var(--radius-sm);
+  color:var(--text);font-size:16px;font-weight:600;
+  padding:13px 16px;outline:none;transition:border-color .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.field-input:focus{border-color:var(--purple2);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.field-input::placeholder{color:var(--muted2);font-weight:400}
+.field-prefix{
+  display:flex;align-items:center;
+  background:rgba(255,255,255,.06);border:1.5px solid var(--border2);
+  border-radius:var(--radius-sm);overflow:hidden;
+  transition:border-color .2s;
+}
+.field-prefix:focus-within{border-color:var(--purple2)}
+.field-prefix-label{padding:13px 14px;color:var(--muted);font-weight:600;font-size:14px;border-right:1.5px solid var(--border2)}
+.field-prefix input{flex:1;background:transparent;border:none;padding:13px 14px;color:var(--text);font-size:16px;font-weight:600;outline:none;font-family:'DM Sans',sans-serif}
+
+/* Info box */
+.info-box{border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;line-height:1.5}
+.info-green{background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);color:#6effc0}
+.info-yellow{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fde68a}
+.info-red{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);color:#fca5a5}
+
+/* Big button */
+.btn-main{
+  width:100%;padding:16px;border-radius:50px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;letter-spacing:.4px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all .2s;
+}
+.btn-main-green{
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:#052;box-shadow:0 6px 24px rgba(0,232,122,.4);
+}
+.btn-main-green:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,232,122,.5)}
+.btn-main-purple{
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  color:#fff;box-shadow:0 6px 24px rgba(124,58,237,.4);
+}
+.btn-main-purple:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 32px rgba(124,58,237,.5)}
+.btn-main-pink{
+  background:linear-gradient(135deg,var(--pink2),var(--pink));
+  color:#fff;box-shadow:0 6px 24px rgba(244,114,182,.35);
+}
+.btn-main-pink:hover:not(:disabled){transform:translateY(-2px)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+/* PIX Result */
+.pix-result{text-align:center}
+.qr-wrap{
+  width:180px;height:180px;margin:0 auto 20px;
+  border-radius:16px;overflow:hidden;border:2px solid var(--border2);
+  background:#fff;display:flex;align-items:center;justify-content:center;
+}
+.qr-wrap img{width:100%;height:100%;object-fit:cover}
+.pix-code-wrap{
+  background:rgba(255,255,255,.04);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.pix-code{flex:1;font-family:monospace;font-size:11px;color:var(--muted);word-break:break-all;text-align:left}
+.btn-copy{
+  flex-shrink:0;padding:7px 14px;border-radius:8px;border:none;
+  background:var(--purple);color:#fff;font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.btn-copy:hover{background:var(--purple2)}
+.pix-status{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+}
+.pix-status.waiting{background:rgba(251,191,36,.1);color:var(--yellow)}
+.pix-status.success{background:rgba(0,232,122,.12);color:var(--green)}
+.pulse-dot{
+  width:8px;height:8px;border-radius:50%;background:currentColor;
+  animation:pulseDot 1.4s ease-in-out infinite;
+}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+.timer{font-size:12px;color:var(--red);font-weight:700;text-align:center;margin-top:8px}
+
+/* ============================================================
+   TOAST
+============================================================ */
+.toast-container{
+  position:fixed;top:20px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:10px;
+}
+.toast{
+  padding:14px 18px;border-radius:var(--radius-sm);
+  color:#fff;font-size:13px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+  display:flex;align-items:center;gap:10px;max-width:320px;
+  animation:toastIn .3s ease both;
+}
+.toast.out{animation:toastOut .3s ease both}
+.toast.success{background:rgba(0,232,122,.9);color:#052}
+.toast.error{background:rgba(255,77,109,.9)}
+.toast.info{background:rgba(124,58,237,.9)}
+.toast.warning{background:rgba(251,191,36,.9);color:#422}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+
+/* ============================================================
+   MODAL EDITAR PERFIL
+============================================================ */
+.edit-avatar-wrap{text-align:center;margin-bottom:24px}
+.edit-avatar{
+  width:80px;height:80px;border-radius:50%;margin:0 auto 10px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;
+  box-shadow:0 0 30px rgba(124,58,237,.4);
+}
+
+/* ============================================================
+   SKELETON LOADER
+============================================================ */
+.skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 100%);
+  background-size:400px 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+
+/* ============================================================
+   RESPONSIVIDADE
+============================================================ */
+@media(max-width:768px){
+  .main{padding:20px 16px 80px}
+  .hero-value{font-size:42px}
+  .content-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .header-inner{padding:0 16px}
+  .user-name{display:none}
+  .modal-bg{align-items:flex-end}
+  .modal{border-radius:24px 24px 0 0}
+  .profile-info-grid{grid-template-columns:1fr}
+}
+@media(max-width:400px){
+  .hero-value{font-size:36px}
+  .amount-grid{grid-template-columns:repeat(2,1fr)}
+  .quick-actions{grid-template-columns:1fr 1fr}
+}
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(124,58,237,.4);border-radius:3px}
+
+/* ============================================================
+   SPIN
+============================================================ */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .7s linear infinite}
+
+/* BOTTOM NAV MOBILE */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(10,6,18,.95);border-top:1px solid var(--border);
+  padding:8px 0 max(8px,env(safe-area-inset-bottom));
+  backdrop-filter:blur(20px);
+}
+.bn-inner{display:flex}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 4px;background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;
+  transition:color .2s;
+}
+.bn-item svg{width:20px;height:20px}
+.bn-item.active,.bn-item:hover{color:var(--purple3)}
+@media(max-width:768px){.bottom-nav{display:block}}
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     APP
+============================================================ -->
+<div id="app">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🎰</div>
+      <div>Helix<span>Wins</span></div>
+    </div>
+    <div class="header-right">
+
+      <!-- SALDO CHIP -->
+      <div class="saldo-chip" id="saldoChip" onclick="toggleDrop('saldoDrop')">
+        <div>
+          <div class="saldo-chip-label">Saldo</div>
+          <div class="saldo-chip-value" id="headerSaldo">R$ 0,00</div>
+        </div>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="saldo-dropdown" id="saldoDrop">
+          <div class="sd-item" onclick="openModal('modalDep');closeDrop('saldoDrop')">
+            <div class="sd-icon green">💰</div>
+            <div><div class="sd-text-label">Depositar</div><div class="sd-text-sub">Adicionar saldo via PIX</div></div>
+          </div>
+          <div class="sd-item" onclick="openModal('modalSaq');closeDrop('saldoDrop')">
+            <div class="sd-icon pink">💸</div>
+            <div><div class="sd-text-label">Sacar</div><div class="sd-text-sub">Retirar seu saldo</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER CHIP -->
+      <div class="user-chip" id="userChip" onclick="toggleDrop('userDrop')">
+        <div class="avatar" id="headerAvatar">T</div>
+        <span class="user-name" id="headerName">Usuário</span>
+        <div class="user-dropdown" id="userDrop">
+          <div class="ud-header">
+            <div class="ud-name" id="dropName">Usuário</div>
+            <div class="ud-email" id="dropEmail">—</div>
+          </div>
+          <div class="ud-item" onclick="openModal('modalPerfil');closeDrop('userDrop')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> Meu Perfil
+          </div>
+          <div class="ud-item" onclick="openModal('modalInd');closeDrop('userDrop')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Indicar Amigos
+          </div>
+          <div class="ud-item danger" onclick="logout()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sair
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO SALDO -->
+  <div class="hero">
+    <div class="hero-label">Seu Saldo Disponível</div>
+    <div class="hero-value" id="heroSaldo">R$ 0,00</div>
+    <div class="hero-actions">
+      <button class="btn-hero btn-dep" onclick="openModal('modalDep')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        Depositar
+      </button>
+      <button class="btn-hero btn-saq" onclick="openModal('modalSaq')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Sacar
+      </button>
+      <button class="btn-hero btn-ind" onclick="openModal('modalInd')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Indicar
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS GRID -->
+  <div class="stats-grid">
+    <div class="stat-card" style="--accent:var(--green);--icon-bg:rgba(0,232,122,.12)">
+      <div class="stat-icon">💳</div>
+      <div class="stat-value" id="statDep">R$ 0,00</div>
+      <div class="stat-label">Total Depositado</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--pink);--icon-bg:rgba(244,114,182,.12)">
+      <div class="stat-icon">⬆️</div>
+      <div class="stat-value" id="statSaq">R$ 0,00</div>
+      <div class="stat-label">Total Sacado</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--purple3);--icon-bg:rgba(192,132,252,.12)">
+      <div class="stat-icon">🎮</div>
+      <div class="stat-value" id="statApost">R$ 0,00</div>
+      <div class="stat-label">Total Apostado</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--yellow);--icon-bg:rgba(251,191,36,.12)">
+      <div class="stat-icon">📈</div>
+      <div class="stat-value" id="statLucro">R$ 0,00</div>
+      <div class="stat-label">Lucro / Prejuízo</div>
+      <div class="stat-delta delta-pos" id="statLucroDelta"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT GRID -->
+  <div class="content-grid">
+
+    <!-- COLUNA ESQUERDA: HISTÓRICO -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Histórico de Transações
+          </div>
+          <div class="tabs" style="width:auto">
+            <button class="tab active" id="tabDep" onclick="switchTab('dep')">Depósitos</button>
+            <button class="tab" id="tabSaq" onclick="switchTab('saq')">Saques</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:16px 20px">
+
+          <!-- TABELA DEPÓSITOS -->
+          <div id="tabelaDep">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Valor</th><th>Método</th><th>Status</th><th>Data</th>
+                </tr></thead>
+                <tbody id="bodyDep">
+                  <tr><td colspan="5"><div class="empty-state">Nenhum depósito ainda.</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TABELA SAQUES -->
+          <div id="tabelaSaq" style="display:none">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Valor</th><th>Chave PIX</th><th>Status</th><th>Data</th>
+                </tr></thead>
+                <tbody id="bodySaq">
+                  <tr><td colspan="5"><div class="empty-state">Nenhum saque ainda.</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA -->
+    <div>
+
+      <!-- PERFIL -->
+      <div class="card profile-card">
+        <div class="profile-top">
+          <div class="avatar-lg" id="profileAvatar">T</div>
+          <div>
+            <div class="profile-name" id="profileName">Carregando...</div>
+            <div class="profile-id" id="profileId">#0000</div>
+          </div>
+        </div>
+        <div class="profile-info-grid">
+          <div class="profile-info-item">
+            <div class="pii-label">Email</div>
+            <div class="pii-value" id="profileEmail">—</div>
+          </div>
+          <div class="profile-info-item">
+            <div class="pii-label">Telefone</div>
+            <div class="pii-value" id="profileTel">—</div>
+          </div>
+          <div class="profile-info-item">
+            <div class="pii-label">Cadastro</div>
+            <div class="pii-value" id="profileData">—</div>
+          </div>
+          <div class="profile-info-item">
+            <div class="pii-label">Partidas</div>
+            <div class="pii-value" id="profilePartidas">0</div>
+          </div>
+        </div>
+        <button class="btn-edit" onclick="openModal('modalPerfil')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Editar Perfil
+        </button>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions">
+        <div class="qa-btn" onclick="openModal('modalDep')">
+          <div class="qa-icon">💰</div>
+          <div class="qa-label">Depositar</div>
+        </div>
+        <div class="qa-btn" onclick="openModal('modalSaq')">
+          <div class="qa-icon">💸</div>
+          <div class="qa-label">Sacar</div>
+        </div>
+        <div class="qa-btn" onclick="openModal('modalInd')">
+          <div class="qa-icon">👥</div>
+          <div class="qa-label">Indicar</div>
+        </div>
+        <div class="qa-btn" onclick="window.location.href='/'">
+          <div class="qa-icon">🎮</div>
+          <div class="qa-label">Jogar</div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /content-grid -->
+
+</main><!-- /main -->
+
+<!-- BOTTOM NAV MOBILE -->
+<nav class="bottom-nav">
+  <div class="bn-inner">
+    <button class="bn-item active" onclick="window.location.href='/'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      Jogar
+    </button>
+    <button class="bn-item" onclick="openModal('modalDep')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Depositar
+    </button>
+    <button class="bn-item" onclick="openModal('modalSaq')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      Sacar
+    </button>
+    <button class="bn-item" onclick="openModal('modalPerfil')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Perfil
+    </button>
+  </div>
+</nav>
+
+</div><!-- /app -->
+
+<!-- ============================================================
+     MODAL DEPÓSITO
+============================================================ -->
+<div class="modal-bg" id="modalDep" onclick="bgClose(event,'modalDep')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">💰 Depositar via PIX</div>
+      <button class="modal-close" onclick="closeModal('modalDep')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEP 1 -->
+      <div id="depStep1">
+        <div class="field-label">Selecione ou digite o valor</div>
+        <div class="amount-grid" id="depAmountGrid">
+          <!-- Preenchido dinamicamente por renderDepPresets() -->
+          <button class="amount-btn" data-v="5"   onclick="selectAmount(this,5,'dep')">R$5</button>
+          <button class="amount-btn" data-v="10"  onclick="selectAmount(this,10,'dep')">R$10</button>
+          <button class="amount-btn" data-v="20"  onclick="selectAmount(this,20,'dep')">R$20</button>
+          <button class="amount-btn" data-v="50"  onclick="selectAmount(this,50,'dep')">R$50</button>
+          <button class="amount-btn" data-v="100" onclick="selectAmount(this,100,'dep')">R$100</button>
+          <button class="amount-btn" data-v="200" onclick="selectAmount(this,200,'dep')">R$200</button>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">Valor personalizado</label>
+          <div class="field-prefix">
+            <span class="field-prefix-label">R$</span>
+            <input type="number" id="depValor" placeholder="0,00" min="5" oninput="clearAmountBtns('dep')" />
+          </div>
+        </div>
+        <div class="info-box info-green" style="margin-bottom:16px">
+          ✅ Seu saldo é creditado automaticamente em até 1 minuto após o pagamento.
+        </div>
+        <button class="btn-main btn-main-green" onclick="gerarPix()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          Gerar QR Code PIX
+        </button>
+      </div>
+
+      <!-- STEP 2: PIX GERADO -->
+      <div id="depStep2" style="display:none">
+        <div class="pix-result">
+          <div class="qr-wrap" id="qrWrap">
+            <div style="text-align:center;color:#9ca3af;font-size:12px;padding:20px">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="spin" style="margin:0 auto 8px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              Gerando QR...
+            </div>
+          </div>
+          <div class="pix-code-wrap" id="pixCodeWrap" style="display:none">
+            <div class="pix-code" id="pixCodeText"></div>
+            <button class="btn-copy" onclick="copiarPix()">Copiar</button>
+          </div>
+          <div class="pix-status waiting" id="pixStatus">
+            <div class="pulse-dot"></div>
+            Aguardando pagamento...
+          </div>
+          <div class="timer" id="pixTimer"></div>
+          <button class="btn-main btn-main-purple" style="margin-top:16px" onclick="voltarDep()">
+            ← Voltar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL SAQUE
+============================================================ -->
+<div class="modal-bg" id="modalSaq" onclick="bgClose(event,'modalSaq')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">💸 Solicitar Saque</div>
+      <button class="modal-close" onclick="closeModal('modalSaq')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;color:var(--muted)">Saldo disponível</span>
+        <strong style="font-size:16px;color:var(--green)" id="saqSaldoDisp">R$ 0,00</strong>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Valor do saque</label>
+        <div class="field-prefix">
+          <span class="field-prefix-label">R$</span>
+          <input type="number" id="saqValor" placeholder="Mínimo R$20,00" min="20" step="0.01" />
+        </div>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Chave PIX</label>
+        <input class="field-input" type="text" id="saqPix" placeholder="CPF, e-mail, telefone ou chave aleatória" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">CPF do titular</label>
+        <input class="field-input" type="text" id="saqCpf" placeholder="Somente números" maxlength="14" inputmode="numeric" />
+      </div>
+      <div class="info-box info-yellow" style="margin-bottom:16px">
+        ⏱ Saques são processados em até 24h úteis.
+      </div>
+      <button class="btn-main btn-main-pink" id="btnSaqConfirmar" onclick="solicitarSaque()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Solicitar Saque
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL PERFIL / EDITAR
+============================================================ -->
+<div class="modal-bg" id="modalPerfil" onclick="bgClose(event,'modalPerfil')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">👤 Meu Perfil</div>
+      <button class="modal-close" onclick="closeModal('modalPerfil')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-avatar-wrap">
+        <div class="edit-avatar" id="editAvatar">T</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px" id="editNomeDisplay">Usuário</div>
+        <div style="font-size:12px;color:var(--muted)" id="editIdDisplay">#0000</div>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Nome</label>
+        <input class="field-input" type="text" id="editNome" placeholder="Seu nome completo" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Chave PIX</label>
+        <input class="field-input" type="text" id="editPix" placeholder="CPF, e-mail, telefone ou chave aleatória" />
+      </div>
+      <div style="height:1px;background:var(--border);margin:20px 0"></div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:14px;color:var(--muted)">ALTERAR SENHA</div>
+      <div class="field-wrap">
+        <label class="field-label">Senha atual</label>
+        <input class="field-input" type="password" id="editSenhaAtual" placeholder="••••••" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Nova senha</label>
+        <input class="field-input" type="password" id="editSenhaNova" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Confirmar nova senha</label>
+        <input class="field-input" type="password" id="editSenhaConf" placeholder="Repita a nova senha" />
+      </div>
+      <button class="btn-main btn-main-purple" id="btnSalvarPerfil" onclick="salvarPerfil()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Salvar Alterações
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL INDICAÇÃO
+============================================================ -->
+<div class="modal-bg" id="modalInd" onclick="bgClose(event,'modalInd')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">👥 Indicar Amigos</div>
+      <button class="modal-close" onclick="closeModal('modalInd')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(244,114,182,.15));border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;border:1px solid rgba(124,58,237,.3)">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Saldo de Comissão</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--purple3)" id="indSaldoAfil">R$ 0,00</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Ganhe <strong style="color:var(--green)">10%</strong> em cada depósito do indicado</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Seu link exclusivo</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <div style="flex:1;font-size:13px;word-break:break-all" id="indLink">Carregando...</div>
+        <button class="btn-copy" onclick="copiarLink()">Copiar</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:24px" id="indTotal">0</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Indicados</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:24px" id="indComDep">0</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Com Depósito</div>
+        </div>
+      </div>
+      <button class="btn-main btn-main-purple" id="btnSacarComissao" onclick="abrirSaqueAfiliado()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Sacar Comissão
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL SAQUE AFILIADO
+============================================================ -->
+<div class="modal-bg" id="modalSaqAfil" onclick="bgClose(event,'modalSaqAfil')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">💸 Sacar Comissão</div>
+      <button class="modal-close" onclick="closeModal('modalSaqAfil')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;color:var(--muted)">Saldo de comissão</span>
+        <strong style="font-size:16px;color:var(--purple3)" id="saqAfilSaldoDisp">R$ 0,00</strong>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Valor do saque</label>
+        <div class="field-prefix">
+          <span class="field-prefix-label">R$</span>
+          <input type="number" id="saqAfilValor" placeholder="Mínimo R$10,00" min="10" step="0.01" />
+        </div>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">Chave PIX</label>
+        <input class="field-input" type="text" id="saqAfilPix" placeholder="CPF, e-mail, telefone ou chave aleatória" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">CPF do titular</label>
+        <input class="field-input" type="text" id="saqAfilCpf" placeholder="Somente números" maxlength="14" inputmode="numeric" />
+      </div>
+      <div class="info-box info-yellow" style="margin-bottom:16px">
+        ⏱ Saques são processados em até 24h úteis.
+      </div>
+      <button class="btn-main btn-main-purple" id="btnSaqAfilConfirmar" onclick="solicitarSaqueAfiliado()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Confirmar Saque
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ============================================================
+//  ESTADO
+// ============================================================
+const STATE = {
+  user: null,
+  saldo: 0,
+  saldoAfil: 0,
+  depTxid: null,
+  pollTimer: null,
+  countdown: null,
+};
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  // Verifica auth
+  const token = localStorage.getItem('hw_token');
+  if (!token) { window.location.href = '/#login'; return; }
+
+  // Aplica cores dinâmicas do tema
+  try {
+    const r = await fetch('/api/public/config?_=' + Date.now());
+    const cfg = await r.json();
+    if (cfg.cores) {
+      const root = document.documentElement;
+      const c = cfg.cores;
+      if (c.cor_bg)      root.style.setProperty('--bg',            c.cor_bg);
+      if (c.cor_bg2)     root.style.setProperty('--bg2',           c.cor_bg2);
+      if (c.cor_bg3)     root.style.setProperty('--bg3',           c.cor_bg3);
+      if (c.cor_purple)  root.style.setProperty('--purple',        c.cor_purple);
+      if (c.cor_purple2) root.style.setProperty('--purple2',       c.cor_purple2);
+      if (c.cor_purple3) root.style.setProperty('--purple3',       c.cor_purple3);
+      if (c.cor_pink)    root.style.setProperty('--pink',          c.cor_pink);
+      if (c.cor_pink2)   root.style.setProperty('--pink2',         c.cor_pink2);
+      if (c.cor_green)   root.style.setProperty('--green',         c.cor_green);
+      if (c.cor_green2)  root.style.setProperty('--green2',        c.cor_green2);
+      if (c.cor_red)     root.style.setProperty('--red',           c.cor_red);
+      if (c.cor_yellow)  root.style.setProperty('--yellow',        c.cor_yellow);
+      if (c.cor_text)    root.style.setProperty('--text',          c.cor_text);
+    }
+    // Renderiza presets de depósito configurados pelo admin
+    if (cfg.dep_presets && cfg.dep_presets.length) {
+      renderDepPresets(cfg.dep_presets);
+    }
+  } catch(_) {}
+
+  await loadDashboard();
+  await loadHistorico();
+  await loadIndicacao();
+  document.addEventListener('click', handleOutsideClick);
+});
+
+// ============================================================
+//  API CALLS
+// ============================================================
+async function apiFetch(method, path, body = null, auth = true) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth) {
+    const token = localStorage.getItem('hw_token');
+    if (!token) { window.location.href = '/#login'; throw new Error('Sem token'); }
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch('/api' + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { localStorage.removeItem('hw_token'); window.location.href = '/#login'; throw new Error('Sessão expirada'); }
+  if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
+  return data;
+}
+
+// ============================================================
+//  PRESETS DE DEPÓSITO
+// ============================================================
+const LABEL_STYLES = {
+  destaque: 'label-destaque',
+  bonus:    'label-bonus',
+  popular:  'label-popular',
+  vip:      'label-vip',
+  custom:   'label-custom',
+};
+
+function renderDepPresets(presets) {
+  const grid = document.getElementById('depAmountGrid');
+  if (!grid || !presets || !presets.length) return;
+  grid.innerHTML = presets.map(p => {
+    const val     = parseFloat(p.valor) || 0;
+    const label   = (p.label || '').trim();
+    const estilo  = p.estilo || 'custom';
+    const cssClass = LABEL_STYLES[estilo] || 'label-custom';
+    const hasLabel = label.length > 0;
+    const paddingTop = hasLabel ? 'padding-top:20px' : '';
+    return `<button class="amount-btn" data-v="${val}"
+      style="${paddingTop}"
+      onclick="selectAmount(this,${val},'dep')">
+      ${hasLabel ? `<span class="preset-label ${cssClass}">${label}</span>` : ''}
+      R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+    </button>`;
+  }).join('');
+}
+
+async function loadDashboard() {
+  try {
+    const data = await apiFetch('GET', '/user/dashboard');
+    STATE.saldo = parseFloat(data.saldo) || 0;
+    STATE.saldoAfil = parseFloat(data.saldo_afiliado) || 0;
+
+    // Atualiza UI
+    const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('heroSaldo').textContent   = fmt(STATE.saldo);
+    document.getElementById('headerSaldo').textContent = fmt(STATE.saldo);
+    document.getElementById('saqSaldoDisp').textContent = fmt(STATE.saldo);
+
+    // Rollover
+    const rv = data.rollover || {};
+    renderRolloverBadge(rv);
+
+    // Tenta carregar dados do me
+    const me = await apiFetch('GET', '/auth/me');
+    const u  = me.user || {};
+    STATE.user = u;
+    populateUserUI(u);
+
+    // Stats (simplificado — carregar do histórico depois)
+    document.getElementById('statDep').textContent   = fmt(0);
+    document.getElementById('statSaq').textContent   = fmt(0);
+    document.getElementById('statApost').textContent = fmt(0);
+    document.getElementById('statLucro').textContent = fmt(0);
+  } catch(e) { toast('Erro ao carregar dados: ' + e.message, 'error'); }
+}
+
+function renderRolloverBadge(rv) {
+  // Cria ou atualiza badge de rollover na hero section
+  let badge = document.getElementById('rolloverBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'rolloverBadge';
+    badge.style.cssText = 'margin-top:10px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;display:none;';
+    const heroSaldo = document.getElementById('heroSaldo');
+    if (heroSaldo && heroSaldo.parentNode) {
+      heroSaldo.parentNode.appendChild(badge);
+    }
+  }
+  if (!rv || !rv.ativo) {
+    badge.style.display = 'none';
+    return;
+  }
+  const fmt = (v) => parseFloat(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const perc = rv.percentual || 0;
+  badge.style.display = 'block';
+  badge.style.background = 'rgba(251,191,36,0.12)';
+  badge.style.border = '1px solid rgba(251,191,36,0.35)';
+  badge.style.color = '#fbbf24';
+  badge.innerHTML = `
+    🔒 <strong>Rollover ativo</strong> — Aposte mais ${fmt(rv.valor_restante)} para liberar o saque
+    <div style="margin-top:6px;background:rgba(0,0,0,0.3);border-radius:6px;height:6px;overflow:hidden">
+      <div style="width:${perc}%;height:100%;background:#fbbf24;border-radius:6px;transition:width .4s"></div>
+    </div>
+    <span style="font-size:11px;font-weight:400;opacity:.7">${fmt(rv.valor_apostado)} de ${fmt(rv.valor_exigido)} apostados (${perc}%)</span>
+  `;
+}
+
+function populateUserUI(u) {
+  const inicial = (u.nome || 'U').charAt(0).toUpperCase();
+  const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  document.getElementById('headerAvatar').textContent    = inicial;
+  document.getElementById('headerName').textContent      = (u.nome || '').split(' ')[0];
+  document.getElementById('profileAvatar').textContent   = inicial;
+  document.getElementById('editAvatar').textContent      = inicial;
+
+  document.getElementById('dropName').textContent   = u.nome || '—';
+  document.getElementById('dropEmail').textContent  = u.email || '—';
+
+  document.getElementById('profileName').textContent     = u.nome || '—';
+  document.getElementById('profileId').textContent       = '#' + String(u.id || 0).padStart(4, '0');
+  document.getElementById('profileEmail').textContent    = u.email || '—';
+  document.getElementById('profileTel').textContent      = fmtTel(u.telefone);
+  document.getElementById('profileData').textContent     = fmtDate(u.data_cadastro);
+  document.getElementById('profilePartidas').textContent = u.total_partidas || 0;
+
+  document.getElementById('editNomeDisplay').textContent = u.nome || '—';
+  document.getElementById('editIdDisplay').textContent   = '#' + String(u.id || 0).padStart(4, '0');
+  document.getElementById('editNome').value  = u.nome || '';
+  document.getElementById('editPix').value   = u.chave_pix || '';
+
+  document.getElementById('indSaldoAfil').textContent = fmt(STATE.saldoAfil);
+}
+
+async function loadHistorico() {
+  try {
+    const data = await apiFetch('GET', '/financeiro/historico?pagina=1&limite=50');
+    const txs  = data.transacoes || [];
+
+    const deps = txs.filter(t => t.tipo === 'deposito');
+    const saqs = txs.filter(t => t.tipo === 'saque' || t.tipo === 'saque_afiliado');
+
+    // Stats
+    let totalDep = 0, totalSaq = 0, totalApost = 0, totalGanho = 0;
+    txs.forEach(t => {
+      const v = parseFloat(t.valor) || 0;
+      if (t.tipo === 'deposito' && t.status === 'aprovado') totalDep += v;
+      if (t.tipo === 'saque' && t.status === 'aprovado') totalSaq += v;
+      if (t.tipo === 'perda_partida') totalApost += v;
+      if (t.tipo === 'ganho_partida' && t.status === 'aprovado') totalGanho += v;
+    });
+
+    const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('statDep').textContent   = fmt(totalDep);
+    document.getElementById('statSaq').textContent   = fmt(totalSaq);
+    document.getElementById('statApost').textContent = fmt(totalApost);
+    const lucro = totalGanho - totalApost;
+    document.getElementById('statLucro').textContent = fmt(Math.abs(lucro));
+    const el = document.getElementById('statLucroDelta');
+    if (lucro >= 0) { el.textContent = '▲ Lucro'; el.className = 'stat-delta delta-pos'; }
+    else            { el.textContent = '▼ Prejuízo'; el.className = 'stat-delta delta-neg'; }
+
+    renderTabelaDep(deps);
+    renderTabelaSaq(saqs);
+  } catch(e) { /* silencia */ }
+}
+
+function renderTabelaDep(deps) {
+  const body = document.getElementById('bodyDep');
+  if (!deps.length) {
+    body.innerHTML = '<tr><td colspan="5"><div class="empty-state">Nenhum depósito ainda.</div></td></tr>';
+    return;
+  }
+  body.innerHTML = deps.map(t => `
+    <tr>
+      <td style="color:var(--muted);font-size:12px">#${t.id}</td>
+      <td style="font-weight:700;color:var(--green)">${fmtMoney(t.valor)}</td>
+      <td style="color:var(--muted)">PIX</td>
+      <td>${badgeStatus(t.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDate(t.created_at)}</td>
+    </tr>`).join('');
+}
+
+function renderTabelaSaq(saqs) {
+  const body = document.getElementById('bodySaq');
+  if (!saqs.length) {
+    body.innerHTML = '<tr><td colspan="5"><div class="empty-state">Nenhum saque ainda.</div></td></tr>';
+    return;
+  }
+  body.innerHTML = saqs.map(t => `
+    <tr>
+      <td style="color:var(--muted);font-size:12px">#${t.id}</td>
+      <td style="font-weight:700;color:var(--pink)">${fmtMoney(t.valor)}</td>
+      <td style="color:var(--muted);font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.pix_chave || '—'}</td>
+      <td>${badgeStatus(t.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDate(t.created_at)}</td>
+    </tr>`).join('');
+}
+
+async function loadIndicacao() {
+  try {
+    const data = await apiFetch('GET', '/indicacao/info');
+    document.getElementById('indLink').textContent    = data.link || '—';
+    document.getElementById('indTotal').textContent   = data.total_indicados || 0;
+    document.getElementById('indComDep').textContent  = data.total_com_deposito || 0;
+    document.getElementById('indSaldoAfil').textContent = fmtMoney(data.saldo_afiliado || 0);
+    STATE.saldoAfil = parseFloat(data.saldo_afiliado) || 0;
+  } catch(e) { /* silencia */ }
+}
+
+// ============================================================
+//  DEPÓSITO PIX
+// ============================================================
+async function gerarPix() {
+  const input = document.getElementById('depValor');
+  const valor = parseFloat(input.value);
+  if (!valor || valor < 5) { toast('Valor mínimo de R$5,00', 'warning'); return; }
+
+  document.getElementById('depStep1').style.display = 'none';
+  document.getElementById('depStep2').style.display = 'block';
+
+  try {
+    const data = await apiFetch('POST', '/financeiro/deposito', { valor, cpf: '00000000000' });
+    STATE.depTxid = data.txid;
+
+    // QR Code
+    const qrWrap = document.getElementById('qrWrap');
+    if (data.qrcode_imagem) {
+      qrWrap.innerHTML = `<img src="${data.qrcode_imagem}" alt="QR PIX" />`;
+    } else {
+      qrWrap.innerHTML = `<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted)">Configure sua chave PIX no painel</div>`;
+    }
+
+    // Código copia e cola
+    if (data.qrcode_texto) {
+      document.getElementById('pixCodeText').textContent = data.qrcode_texto;
+      document.getElementById('pixCodeWrap').style.display = 'flex';
+    }
+
+    // Timer e polling
+    startCountdown(data.expiracao_minutos || 30);
+    iniciarPolling(data.txid);
+
+  } catch(e) {
+    toast(e.message, 'error');
+    voltarDep();
+  }
+}
+
+function voltarDep() {
+  document.getElementById('depStep1').style.display = 'block';
+  document.getElementById('depStep2').style.display = 'none';
+  stopPolling();
+}
+
+function copiarPix() {
+  const txt = document.getElementById('pixCodeText').textContent;
+  navigator.clipboard.writeText(txt).then(() => toast('Código copiado!','success')).catch(() => toast('Erro ao copiar','error'));
+}
+
+function iniciarPolling(txid) {
+  stopPolling();
+  async function checar() {
+    try {
+      const res = await apiFetch('GET', '/financeiro/deposito/status/' + txid);
+      if (res.status === 'aprovado') {
+        stopPolling();
+        const st = document.getElementById('pixStatus');
+        st.className = 'pix-status success';
+        st.innerHTML = '✅ Pagamento confirmado! Saldo atualizado.';
+        await loadDashboard();
+        await loadHistorico();
+        toast('Depósito confirmado! Saldo atualizado.','success');
+        setTimeout(() => closeModal('modalDep'), 2500);
+        return;
+      }
+    } catch(e) {}
+    STATE.pollTimer = setTimeout(checar, 4000);
+  }
+  STATE.pollTimer = setTimeout(checar, 4000);
+}
+
+function stopPolling() {
+  if (STATE.pollTimer) { clearTimeout(STATE.pollTimer); STATE.pollTimer = null; }
+  if (STATE.countdown) { clearInterval(STATE.countdown); STATE.countdown = null; }
+}
+
+function startCountdown(minutes) {
+  let secs = minutes * 60;
+  const el  = document.getElementById('pixTimer');
+  STATE.countdown = setInterval(() => {
+    const m = String(Math.floor(secs/60)).padStart(2,'0');
+    const s = String(secs%60).padStart(2,'0');
+    el.textContent = `⏱ Expira em ${m}:${s}`;
+    if (secs <= 0) { clearInterval(STATE.countdown); el.textContent = 'PIX expirado.'; }
+    secs--;
+  }, 1000);
+}
+
+// ============================================================
+//  SAQUE
+// ============================================================
+async function solicitarSaque() {
+  const valor = parseFloat(document.getElementById('saqValor').value);
+  const pix   = document.getElementById('saqPix').value.trim();
+  const cpf   = document.getElementById('saqCpf').value.replace(/\D/g,'');
+
+  if (!valor || valor < 20)  { toast('Valor mínimo R$20,00','warning'); return; }
+  if (valor > STATE.saldo)   { toast('Saldo insuficiente','error'); return; }
+  if (!pix)                  { toast('Informe sua chave PIX','warning'); return; }
+  if (cpf.length !== 11)     { toast('CPF inválido (11 dígitos)','warning'); return; }
+
+  const btn = document.getElementById('btnSaqConfirmar');
+  btn.disabled = true;
+  btn.textContent = 'Solicitando...';
+
+  try {
+    const data = await apiFetch('POST', '/financeiro/saque', { valor, chave_pix: pix, cpf });
+    toast('Saque solicitado! Processado em até 24h.','success');
+    STATE.saldo = parseFloat(data.saldo_novo) || STATE.saldo - valor;
+    const fmt = (v) => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.getElementById('heroSaldo').textContent    = fmt(STATE.saldo);
+    document.getElementById('headerSaldo').textContent  = fmt(STATE.saldo);
+    document.getElementById('saqSaldoDisp').textContent = fmt(STATE.saldo);
+    await loadHistorico();
+    closeModal('modalSaq');
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Solicitar Saque';
+  }
+}
+
+// ============================================================
+//  SAQUE AFILIADO
+// ============================================================
+function abrirSaqueAfiliado() {
+  const fmt = (v) => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('saqAfilSaldoDisp').textContent = fmt(STATE.saldoAfil || 0);
+  const pixPerfil = document.getElementById('editPix')?.value?.trim();
+  if (pixPerfil) document.getElementById('saqAfilPix').value = pixPerfil;
+
+  // Fecha instantaneamente sem animação e abre o próximo
+  const modalInd = document.getElementById('modalInd');
+  modalInd.style.transition = 'none';
+  modalInd.style.opacity = '0';
+  modalInd.style.pointerEvents = 'none';
+  modalInd.classList.remove('open');
+  const innerModal = modalInd.querySelector('.modal');
+  innerModal.style.transition = 'none';
+  innerModal.style.transform = 'translateY(40px)';
+  openModal('modalSaqAfil');
+  setTimeout(() => {
+    modalInd.style.transition = '';
+    modalInd.style.opacity = '';
+    modalInd.style.pointerEvents = '';
+    innerModal.style.transition = '';
+    innerModal.style.transform = '';
+  }, 400);
+}
+
+async function solicitarSaqueAfiliado() {
+  const valor = parseFloat(document.getElementById('saqAfilValor').value);
+  const pix   = document.getElementById('saqAfilPix').value.trim();
+  const cpf   = document.getElementById('saqAfilCpf').value.replace(/\D/g,'');
+
+  if (!valor || valor < 10)          { toast('Valor mínimo R$10,00','warning'); return; }
+  if (valor > STATE.saldoAfil)       { toast('Saldo de comissão insuficiente','error'); return; }
+  if (!pix)                          { toast('Informe sua chave PIX','warning'); return; }
+  if (cpf.length !== 11)             { toast('CPF inválido (11 dígitos)','warning'); return; }
+
+  const btn = document.getElementById('btnSaqAfilConfirmar');
+  btn.disabled = true;
+  btn.textContent = 'Solicitando...';
+
+  try {
+    const data = await apiFetch('POST', '/financeiro/saque-afiliado', { valor, chave_pix: pix, cpf });
+    toast('Saque de comissão solicitado! Processado em até 24h.','success');
+    STATE.saldoAfil = parseFloat(data.saldo_afiliado_novo) || Math.max(0, STATE.saldoAfil - valor);
+    const fmt = (v) => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.getElementById('indSaldoAfil').textContent   = fmt(STATE.saldoAfil);
+    document.getElementById('saqAfilSaldoDisp').textContent = fmt(STATE.saldoAfil);
+    await loadHistorico();
+    closeModal('modalSaqAfil');
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Confirmar Saque';
+  }
+}
+
+// ============================================================
+//  PERFIL
+// ============================================================
+async function salvarPerfil() {
+  const nome      = document.getElementById('editNome').value.trim();
+  const pix       = document.getElementById('editPix').value.trim();
+  const senhaAt   = document.getElementById('editSenhaAtual').value;
+  const senhaNova = document.getElementById('editSenhaNova').value;
+  const senhaConf = document.getElementById('editSenhaConf').value;
+
+  const btn = document.getElementById('btnSalvarPerfil');
+  btn.disabled = true;
+
+  try {
+    // Salva PIX se informado
+    if (pix) {
+      await apiFetch('PUT', '/user/pix', { chave_pix: pix });
+    }
+    // Altera senha se informada
+    if (senhaAt || senhaNova) {
+      if (senhaNova !== senhaConf) { toast('Senhas não coincidem','warning'); btn.disabled=false; return; }
+      if (senhaNova.length < 6)   { toast('Mínimo 6 caracteres','warning'); btn.disabled=false; return; }
+      await apiFetch('PUT', '/user/senha', { senha_atual: senhaAt, senha_nova: senhaNova });
+    }
+    toast('Perfil atualizado com sucesso!','success');
+    document.getElementById('editSenhaAtual').value = '';
+    document.getElementById('editSenhaNova').value  = '';
+    document.getElementById('editSenhaConf').value  = '';
+    await loadDashboard();
+    closeModal('modalPerfil');
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+//  INDICAÇÃO
+// ============================================================
+function copiarLink() {
+  const txt = document.getElementById('indLink').textContent;
+  navigator.clipboard.writeText(txt).then(() => toast('Link copiado!','success'));
+}
+
+// ============================================================
+//  TABS
+// ============================================================
+function switchTab(tab) {
+  document.getElementById('tabelaDep').style.display = tab === 'dep' ? 'block' : 'none';
+  document.getElementById('tabelaSaq').style.display = tab === 'saq' ? 'block' : 'none';
+  document.getElementById('tabDep').className = 'tab' + (tab==='dep'?' active':'');
+  document.getElementById('tabSaq').className = 'tab' + (tab==='saq'?' active':'');
+}
+
+// ============================================================
+//  AMOUNT PICKER
+// ============================================================
+function selectAmount(btn, val, prefix) {
+  document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(prefix + 'Valor').value = val;
+}
+function clearAmountBtns(prefix) {
+  document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+}
+
+// ============================================================
+//  MODAIS
+// ============================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Reset depósito ao abrir
+  if (id === 'modalDep') {
+    document.getElementById('depStep1').style.display = 'block';
+    document.getElementById('depStep2').style.display = 'none';
+    document.getElementById('depValor').value = '';
+    document.getElementById('pixStatus').className = 'pix-status waiting';
+    document.getElementById('pixStatus').innerHTML = '<div class="pulse-dot"></div>Aguardando pagamento...';
+    document.getElementById('pixTimer').textContent = '';
+    document.getElementById('qrWrap').innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:12px;padding:20px">QR Code aparecerá aqui</div>';
+    document.getElementById('pixCodeWrap').style.display = 'none';
+    document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+    stopPolling();
+  }
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+  if (id === 'modalDep') stopPolling();
+}
+function bgClose(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+// ============================================================
+//  DROPDOWNS
+// ============================================================
+function toggleDrop(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.saldo-dropdown,.user-dropdown').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+function closeDrop(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function handleOutsideClick(e) {
+  if (!e.target.closest('#saldoChip')) document.getElementById('saldoDrop').classList.remove('open');
+  if (!e.target.closest('#userChip'))  document.getElementById('userDrop').classList.remove('open');
+}
+
+// ============================================================
+//  LOGOUT
+// ============================================================
+function logout() {
+  localStorage.removeItem('hw_token');
+  localStorage.removeItem('hw_user');
+  window.location.href = '/#login';
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function fmtMoney(v) {
+  return (parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function fmtTel(t) {
+  if (!t) return '—';
+  const d = String(t).replace(/\D/,'');
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return t;
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return dt.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function badgeStatus(s) {
+  const map = { aprovado:['badge-green','✔ Aprovado'], pendente:['badge-yellow','⏳ Pendente'], rejeitado:['badge-red','✕ Rejeitado'] };
+  const [cls, label] = map[s] || ['badge-yellow', s];
+  return `<span class="badge ${cls}"><span class="badge-dot"></span>${label}</span>`;
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+function toast(msg, type = 'info', duration = 3500) {
+  const icons = { success:'✅', error:'❌', info:'ℹ️', warning:'⚠️' };
+  const c  = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||''}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    el.addEventListener('animationend', () => el.remove(), { once:true });
+  }, duration);
+}
+</script>
+
+</body>
+</html>

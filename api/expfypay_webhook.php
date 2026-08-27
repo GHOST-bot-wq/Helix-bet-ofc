@@ -1,0 +1,246 @@
+<?php
+// ===================================================================
+//  api/expfypay_webhook.php — Webhook de confirmação ExpfyPay
+//
+//  Payload recebido:
+//  {
+//    "event": "payment.confirmed",
+//    "transaction_id": "tx_123456",
+//    "external_id": "nosso_txid",
+//    "status": "completed",
+//    "amount": 100.00,
+//    "paid_at": "2024-01-16T15:30:00Z",
+//    "pix_data": { ... }
+//  }
+//
+//  Segurança: HMAC-SHA256 do corpo bruto no header X-Signature
+//  Ref: https://3xpro.com.br/expfypay/
+//  Compatível com PHP 7.2+
+// ===================================================================
+
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/afiliado_regra.php';
+require_once __DIR__ . '/../rollover_helper.php';
+require_once __DIR__ . '/../includes/facebook_pixel.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+// Só aceita POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+// Gateway ativo? Responde 200 para não gerar retentativas
+if (cfg('gateway_ativo', 'manual') !== 'expfypay') {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'gateway inativo']);
+    exit;
+}
+
+$rawBody = file_get_contents('php://input');
+
+if (empty($rawBody)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Payload vazio']);
+    exit;
+}
+
+// ── Valida assinatura HMAC-SHA256 (X-Signature) ──────────────────────
+// A ExpfyPay assina o corpo com a secret_key
+$secretKey = cfg('expfypay_client_secret', '');
+if ($secretKey) {
+    $signatureRecebida = '';
+    if (!empty($_SERVER['HTTP_X_SIGNATURE'])) {
+        $signatureRecebida = $_SERVER['HTTP_X_SIGNATURE'];
+    }
+
+    if ($signatureRecebida) {
+        $assinaturaEsperada = hash_hmac('sha256', $rawBody, $secretKey);
+        if (!hash_equals($assinaturaEsperada, $signatureRecebida)) {
+            expfypay_log('WEBHOOK_ASSINATURA_INVALIDA', substr($rawBody, 0, 200));
+            http_response_code(401);
+            echo json_encode(['error' => 'Assinatura invalida']);
+            exit;
+        }
+    }
+}
+
+$data = json_decode($rawBody, true);
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON invalido']);
+    exit;
+}
+
+// ── Verifica o evento ─────────────────────────────────────────────────
+// Eventos de pagamento confirmado: payment.confirmed ou payment.received
+$event  = isset($data['event'])  ? $data['event']  : '';
+$status = isset($data['status']) ? strtolower($data['status']) : '';
+
+$isPago = ($event === 'payment.confirmed')
+       || ($event === 'payment.received')
+       || ($status === 'completed')
+       || ($status === 'paid');
+
+if (!$isPago) {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'evento ignorado: ' . $event . '/' . $status]);
+    exit;
+}
+
+// ── Extrai o external_id (nosso txid) e o transaction_id da ExpfyPay ─
+// Tentamos primeiro external_id (nosso), depois transaction_id (deles)
+$txid = '';
+foreach (['external_id', 'transaction_id', 'txid'] as $k) {
+    if (!empty($data[$k])) { $txid = (string)$data[$k]; break; }
+}
+
+if (!$txid) {
+    expfypay_log('WEBHOOK_SEM_TXID', $rawBody);
+    http_response_code(422);
+    echo json_encode(['error' => 'txid nao encontrado no payload']);
+    exit;
+}
+
+// ── Busca a transação no banco ────────────────────────────────────────
+$tx = null;
+
+// Tenta pelo external_id
+$stmt = db()->prepare(
+    'SELECT * FROM transacoes WHERE referencia = ? AND tipo = "deposito" LIMIT 1'
+);
+$stmt->execute([$txid]);
+$tx = $stmt->fetch();
+
+// Se não achou pelo external_id, tenta pelo transaction_id da ExpfyPay
+if (!$tx && !empty($data['transaction_id']) && $data['transaction_id'] !== $txid) {
+    $stmt = db()->prepare(
+        'SELECT * FROM transacoes WHERE referencia = ? AND tipo = "deposito" LIMIT 1'
+    );
+    $stmt->execute([$data['transaction_id']]);
+    $tx = $stmt->fetch();
+}
+
+if (!$tx) {
+    expfypay_log('WEBHOOK_TX_NAO_ENCONTRADA', 'txid=' . $txid);
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'transacao nao encontrada']);
+    exit;
+}
+
+// ── Idempotência ──────────────────────────────────────────────────────
+if ($tx['status'] === 'aprovado') {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'ja processada']);
+    exit;
+}
+
+// ── Credita saldo + comissão + bônus ─────────────────────────────────
+$db = db();
+$db->beginTransaction();
+
+try {
+    // 1. Aprova a transação
+    $db->prepare(
+        'UPDATE transacoes SET status = "aprovado", updated_at = NOW() WHERE id = ?'
+    )->execute([$tx['id']]);
+
+    // 2. Credita saldo do usuário
+    $db->prepare(
+        'UPDATE usuarios SET saldo = saldo + ? WHERE id = ?'
+    )->execute([$tx['valor'], $tx['usuario_id']]);
+
+    // 3. Comissão de indicação
+    $stmtInd = $db->prepare('SELECT indicado_por FROM usuarios WHERE id = ?');
+    $stmtInd->execute([$tx['usuario_id']]);
+    $rowInd = $stmtInd->fetch();
+
+    if ($rowInd && $rowInd['indicado_por']) {
+        $afiliadorId = (int)$rowInd['indicado_por'];
+        $convidadoId = (int)$tx['usuario_id'];
+
+        // Se modo=deposito, classifica agora; se modo=cadastro, já foi classificado no cadastro
+        if (cfg('afiliado_regra_ativo', '0') === '1' && cfg('afiliado_regra_momento', 'deposito') === 'deposito') {
+            afil_classificar_convidado($afiliadorId, $convidadoId, 'deposito');
+        }
+
+        // Não paga comissão se o convidado estiver marcado como ignorado
+        if (!afil_convidado_ignorado($afiliadorId, $convidadoId)) {
+            $stmtPerc = $db->prepare('SELECT comissao_perc_individual FROM usuarios WHERE id = ?');
+            $stmtPerc->execute([$afiliadorId]);
+            $rowPerc = $stmtPerc->fetch();
+            $percIndividual = ($rowPerc && $rowPerc['comissao_perc_individual'] !== null)
+                ? (float)$rowPerc['comissao_perc_individual'] : null;
+            $perc = $percIndividual !== null ? $percIndividual : (float)cfg('comissao_nivel1_perc', 10);
+
+            if ($perc > 0) {
+                $comissao = round($tx['valor'] * $perc / 100, 2);
+                $db->prepare(
+                    'UPDATE usuarios SET saldo_afiliado = saldo_afiliado + ?, total_comissao = total_comissao + ? WHERE id = ?'
+                )->execute([$comissao, $comissao, $afiliadorId]);
+                $db->prepare(
+                    'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "bonus_indicacao", ?, "aprovado", ?, "Comissao de indicacao")'
+                )->execute([$afiliadorId, $comissao, $convidadoId]);
+                $db->prepare('UPDATE usuarios SET bonus_pago = 1 WHERE id = ?')
+                   ->execute([$convidadoId]);
+            }
+        }
+    }
+
+    // 4. Bônus de depósito
+    $bonusPerc = (float)cfg('bonus_deposito_perc', 0);
+    $bonusMin  = (float)cfg('bonus_deposito_minimo', 0);
+    $bonusMax  = (float)cfg('bonus_deposito_maximo', 0);
+    if ($bonusPerc > 0 && $tx['valor'] >= $bonusMin && ($bonusMax === 0.0 || $tx['valor'] <= $bonusMax)) {
+        $bonus = round($tx['valor'] * $bonusPerc / 100, 2);
+        if ($bonus > 0) {
+            $db->prepare('UPDATE usuarios SET saldo = saldo + ? WHERE id = ?')
+               ->execute([$bonus, $tx['usuario_id']]);
+            $db->prepare(
+                'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "ajuste_admin", ?, "aprovado", ?, "Bonus de deposito")'
+            )->execute([$tx['usuario_id'], $bonus, $tx['id']]);
+        }
+    }
+
+    $db->commit();
+
+    // ── 5. Criar rollover se sistema estiver ativo ───────────────────
+    rollover_criar($tx['usuario_id'], $tx['id'], (float)$tx['valor']);
+
+    // ── 6. Facebook Pixel — evento Purchase (Conversions API) ────────
+    if (fb_pixel_ativo()) {
+        fb_event_purchase(
+            (float)$tx['valor'],
+            (int)$tx['usuario_id'],
+            (string)$tx['id']
+        );
+    }
+
+    expfypay_log('WEBHOOK_APROVADO', 'txid=' . $txid . ' valor=' . $tx['valor'] . ' usuario=' . $tx['usuario_id']);
+
+} catch (Exception $e) {
+    $db->rollBack();
+    expfypay_log('WEBHOOK_ERRO', $e->getMessage() . ' txid=' . $txid);
+    http_response_code(500);
+    echo json_encode(['error' => 'Erro interno ao processar pagamento']);
+    exit;
+}
+
+http_response_code(200);
+echo json_encode(['ok' => true, 'txid' => $txid]);
+exit;
+
+// ── Logger ────────────────────────────────────────────────────────────
+function expfypay_log($acao, $detalhes)
+{
+    try {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
+        db()->prepare(
+            'INSERT INTO admin_logs (admin_id, acao, detalhes, ip) VALUES (NULL, ?, ?, ?)'
+        )->execute([$acao, substr((string)$detalhes, 0, 1000), $ip]);
+    } catch (Exception $e) {
+        // silencia — log não pode derrubar o webhook
+    }
+}

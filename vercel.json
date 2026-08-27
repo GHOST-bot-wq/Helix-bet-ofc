@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "functions": {
+    "api/**/*.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "*.php": {
+      "runtime": "vercel-php@0.9.0"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(config\\.php|bancodedadosh\\.sql|includes/.*|\\.htaccess|\\.user\\.ini|LEIA\\ AQUI\\.txt)",
+      "status": 403
+    },
+    {
+      "src": "/img/(.*)",
+      "dest": "/images/$1"
+    },
+    {
+      "src": "/api/admin\\.php(.*)",
+      "dest": "/api/admin.php$1"
+    },
+    {
+      "src": "/admin/api\\.php/(.*)",
+      "dest": "/api/admin.php/$1"
+    },
+    {
+      "src": "/admin/api\\.php$",
+      "dest": "/api/admin.php"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.php"
+    },
+    {
+      "src": "/admin/?$",
+      "dest": "/admin/index.html"
+    },
+    {
+      "src": "/admin/((?!index\\.html|api\\.php|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp)$).*)$",
+      "dest": "/api/admin.php"
+    },
+    {
+      "src": "/index\\.php",
+      "dest": "/index.html"
+    }
+  ]
+}

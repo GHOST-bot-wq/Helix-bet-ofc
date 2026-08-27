@@ -1,0 +1,205 @@
+<?php
+// ===================================================================
+//  api/pixup_webhook.php — Webhook de confirmação de pagamento PixUp
+//  Payload real: { "requestBody": { "transactionId":"...", "external_id":"...",
+//                  "amount":15.00, "status":"PAID", ... } }
+//  Ref: https://pixup.readme.io/reference/evento-de-pagamento
+//  Compatível com PHP 7.2+
+// ===================================================================
+
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/afiliado_regra.php';
+require_once __DIR__ . '/../rollover_helper.php';
+require_once __DIR__ . '/../includes/facebook_pixel.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+// Gateway ativo? Responde 200 silenciosamente para não gerar retentativas
+if (cfg('gateway_ativo', 'manual') !== 'pixup') {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'gateway inativo']);
+    exit;
+}
+
+$rawBody = file_get_contents('php://input');
+$data    = json_decode($rawBody, true);
+
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Payload invalido']);
+    exit;
+}
+
+// ── Payload real da PixUp vem dentro de "requestBody" ────────────────
+// { "requestBody": { "transactionType":"RECEIVEPIX", "transactionId":"...",
+//   "external_id":"...", "amount":15.00, "status":"PAID", ... } }
+$payload = isset($data['requestBody']) ? $data['requestBody'] : $data;
+
+// ── Verifica se o status é PAID ──────────────────────────────────────
+$status = strtoupper(isset($payload['status']) ? $payload['status'] : '');
+if ($status !== 'PAID') {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'status ignorado: ' . $status]);
+    exit;
+}
+
+// ── Extrai o txid / external_id para localizar a transação ───────────
+// A PixUp envia transactionId (ID deles) e external_id (nosso txid enviado)
+// Tentamos primeiro o external_id que é o nosso txid original
+$txid = '';
+foreach (['external_id', 'transactionId', 'transaction_id', 'txid'] as $k) {
+    if (!empty($payload[$k])) { $txid = (string)$payload[$k]; break; }
+}
+
+if (!$txid) {
+    pixup_log('WEBHOOK_SEM_TXID', $rawBody);
+    http_response_code(422);
+    echo json_encode(['error' => 'txid nao encontrado no payload']);
+    exit;
+}
+
+// ── Busca a transação no banco ────────────────────────────────────────
+// Tenta pelo external_id primeiro, depois pelo transactionId
+$tx = null;
+foreach ([$txid] as $ref) {
+    $stmt = db()->prepare(
+        'SELECT * FROM transacoes WHERE referencia = ? AND tipo = "deposito" LIMIT 1'
+    );
+    $stmt->execute([$ref]);
+    $tx = $stmt->fetch();
+    if ($tx) break;
+}
+
+// Se não achou pelo external_id, tenta pelo transactionId da PixUp
+if (!$tx && !empty($payload['transactionId']) && $payload['transactionId'] !== $txid) {
+    $stmt = db()->prepare(
+        'SELECT * FROM transacoes WHERE referencia = ? AND tipo = "deposito" LIMIT 1'
+    );
+    $stmt->execute([$payload['transactionId']]);
+    $tx = $stmt->fetch();
+}
+
+if (!$tx) {
+    pixup_log('WEBHOOK_TX_NAO_ENCONTRADA', 'txid=' . $txid);
+    http_response_code(200); // 200 para não gerar retentativas infinitas
+    echo json_encode(['ok' => true, 'info' => 'transacao nao encontrada']);
+    exit;
+}
+
+// ── Idempotência: já aprovada? ────────────────────────────────────────
+if ($tx['status'] === 'aprovado') {
+    http_response_code(200);
+    echo json_encode(['ok' => true, 'info' => 'ja processada']);
+    exit;
+}
+
+// ── Confirma o depósito (credita saldo + comissão + bônus) ───────────
+$db = db();
+$db->beginTransaction();
+
+try {
+    // 1. Aprova a transação
+    $db->prepare(
+        'UPDATE transacoes SET status = "aprovado", updated_at = NOW() WHERE id = ?'
+    )->execute([$tx['id']]);
+
+    // 2. Credita saldo
+    $db->prepare(
+        'UPDATE usuarios SET saldo = saldo + ? WHERE id = ?'
+    )->execute([$tx['valor'], $tx['usuario_id']]);
+
+    // 3. Comissão de indicação
+    $stmtInd = $db->prepare('SELECT indicado_por FROM usuarios WHERE id = ?');
+    $stmtInd->execute([$tx['usuario_id']]);
+    $rowInd = $stmtInd->fetch();
+
+    if ($rowInd && $rowInd['indicado_por']) {
+        $afiliadorId = (int)$rowInd['indicado_por'];
+        $convidadoId = (int)$tx['usuario_id'];
+
+        // Se modo=cadastro, classifica agora (idempotente: não reclassifica se já existir)
+        if (cfg('afiliado_regra_ativo', '0') === '1' && cfg('afiliado_regra_momento', 'deposito') === 'deposito') {
+            afil_classificar_convidado($afiliadorId, $convidadoId, 'deposito');
+        }
+
+        // Não paga comissão se o convidado estiver marcado como ignorado
+        if (!afil_convidado_ignorado($afiliadorId, $convidadoId)) {
+            $stmtPerc = $db->prepare('SELECT comissao_perc_individual FROM usuarios WHERE id = ?');
+            $stmtPerc->execute([$afiliadorId]);
+            $rowPerc = $stmtPerc->fetch();
+            $percIndividual = ($rowPerc && $rowPerc['comissao_perc_individual'] !== null)
+                ? (float)$rowPerc['comissao_perc_individual'] : null;
+            $perc = $percIndividual !== null ? $percIndividual : (float)cfg('comissao_nivel1_perc', 10);
+
+            if ($perc > 0) {
+                $comissao = round($tx['valor'] * $perc / 100, 2);
+                $db->prepare(
+                    'UPDATE usuarios SET saldo_afiliado = saldo_afiliado + ?, total_comissao = total_comissao + ? WHERE id = ?'
+                )->execute([$comissao, $comissao, $afiliadorId]);
+                $db->prepare(
+                    'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "bonus_indicacao", ?, "aprovado", ?, "Comissao de indicacao")'
+                )->execute([$afiliadorId, $comissao, $convidadoId]);
+                $db->prepare('UPDATE usuarios SET bonus_pago = 1 WHERE id = ?')
+                   ->execute([$convidadoId]);
+            }
+        }
+    }
+
+    // 4. Bônus de depósito
+    $bonusPerc = (float)cfg('bonus_deposito_perc', 0);
+    $bonusMin  = (float)cfg('bonus_deposito_minimo', 0);
+    $bonusMax  = (float)cfg('bonus_deposito_maximo', 0);
+    if ($bonusPerc > 0 && $tx['valor'] >= $bonusMin && ($bonusMax === 0.0 || $tx['valor'] <= $bonusMax)) {
+        $bonus = round($tx['valor'] * $bonusPerc / 100, 2);
+        if ($bonus > 0) {
+            $db->prepare('UPDATE usuarios SET saldo = saldo + ? WHERE id = ?')
+               ->execute([$bonus, $tx['usuario_id']]);
+            $db->prepare(
+                'INSERT INTO transacoes (usuario_id, tipo, valor, status, referencia, descricao) VALUES (?, "ajuste_admin", ?, "aprovado", ?, "Bonus de deposito")'
+            )->execute([$tx['usuario_id'], $bonus, $tx['id']]);
+        }
+    }
+
+    $db->commit();
+
+    // ── 5. Criar rollover se sistema estiver ativo ───────────────────
+    rollover_criar($tx['usuario_id'], $tx['id'], (float)$tx['valor']);
+
+    // ── 6. Facebook Pixel — evento Purchase (Conversions API) ────────
+    if (fb_pixel_ativo()) {
+        fb_event_purchase(
+            (float)$tx['valor'],
+            (int)$tx['usuario_id'],
+            (string)$tx['id']
+        );
+    }
+
+    pixup_log('WEBHOOK_APROVADO', 'txid=' . $txid . ' valor=' . $tx['valor'] . ' usuario=' . $tx['usuario_id']);
+
+} catch (Exception $e) {
+    $db->rollBack();
+    pixup_log('WEBHOOK_ERRO', $e->getMessage() . ' txid=' . $txid);
+    http_response_code(500);
+    echo json_encode(['error' => 'Erro interno ao processar pagamento']);
+    exit;
+}
+
+http_response_code(200);
+echo json_encode(['ok' => true, 'txid' => $txid]);
+exit;
+
+function pixup_log($acao, $detalhes)
+{
+    try {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
+        db()->prepare(
+            'INSERT INTO admin_logs (admin_id, acao, detalhes, ip) VALUES (NULL, ?, ?, ?)'
+        )->execute([$acao, substr($detalhes, 0, 1000), $ip]);
+    } catch (Exception $e) {}
+}
