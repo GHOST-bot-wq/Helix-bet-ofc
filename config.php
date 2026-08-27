@@ -4,12 +4,12 @@
 //  Compativel com PHP 7.2+
 // ===================================================================
 
-define('DB_HOST', getenv('DB_HOST') ?: 'bavwjmiclz2ptlzhy8nr-mysql.services.clever-cloud.com');
-define('DB_NAME', getenv('DB_NAME') ?: 'bavwjmiclz2ptlzhy8nr');
-define('DB_USER', getenv('DB_USER') ?: 'u99oi9uyvl3yn5mv');
-define('DB_PASS', getenv('DB_PASS') ?: 'u99oi9uyvl3yn5mv');
+define('DB_HOST', 'bavwjmiclz2ptlzhy8nr-mysql.services.clever-cloud.com');
+define('DB_NAME', 'bavwjmiclz2ptlzhy8nr');
+define('DB_USER', 'bavwjmiclz2ptlzhy8nr');
+define('DB_PASS', 'u99oi9uyvl3yn5mv');
 define('DB_CHARSET', 'utf8mb4');
-define('APP_ENV', getenv('APP_ENV') ?: 'development'); // troque para 'development' para ver erros
+define('APP_ENV', 'development');
 
 function db()
 {
