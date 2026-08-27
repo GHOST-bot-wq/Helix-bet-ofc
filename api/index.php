@@ -19,6 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+
+// Suporte para ler a URL original na Vercel caso ocorra reescrita interna
+if (!empty($_SERVER['HTTP_X_VERCEL_FORWARDED_URL'])) {
+    $requestUri = $_SERVER['HTTP_X_VERCEL_FORWARDED_URL'];
+} elseif (!empty($_SERVER['HTTP_X_NOW_ROUTE_SOURCE'])) {
+    $requestUri = $_SERVER['HTTP_X_NOW_ROUTE_SOURCE'];
+}
+
 $scriptPath = dirname($_SERVER['SCRIPT_NAME']); // ex: /api
 $path       = parse_url($requestUri, PHP_URL_PATH);
 

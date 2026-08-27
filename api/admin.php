@@ -17,6 +17,14 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+
+// Suporte para ler a URL original na Vercel caso ocorra reescrita interna
+if (!empty($_SERVER['HTTP_X_VERCEL_FORWARDED_URL'])) {
+    $requestUri = $_SERVER['HTTP_X_VERCEL_FORWARDED_URL'];
+} elseif (!empty($_SERVER['HTTP_X_NOW_ROUTE_SOURCE'])) {
+    $requestUri = $_SERVER['HTTP_X_NOW_ROUTE_SOURCE'];
+}
+
 $path       = parse_url($requestUri, PHP_URL_PATH);
 
 // Remove qualquer prefixo conhecido como /admin/api.php, /api/admin.php, /admin, ou /api
