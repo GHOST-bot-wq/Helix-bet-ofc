@@ -61,9 +61,10 @@
       transform: translateX(-50%);
       font-size: 64px;
       font-weight: bold;
-      color: #1a1a2e;
+      color: #ffffff;
       white-space: nowrap;
       pointer-events: none;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
     #idle-hint {
@@ -72,9 +73,10 @@
       left: 50%;
       transform: translateX(-50%);
       font-size: 18px;
-      color: rgba(26, 26, 46, 0.45);
+      color: rgba(255, 255, 255, 0.65);
       display: none;
       pointer-events: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
 
     #idle-hint.visible {
@@ -92,9 +94,10 @@
       top: 96px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 20px;
-      font-weight: bold;
-      color: #e91e63;
+      font-size: 22px;
+      font-weight: 800;
+      color: #FF007A;
+      text-shadow: 0 0 12px rgba(255,0,122,0.6);
       display: none;
       pointer-events: none;
     }
@@ -109,7 +112,8 @@
       transform: translateX(-50%);
       font-size: 38px;
       font-weight: bold;
-      color: #1a1a2e;
+      color: #00E676;
+      text-shadow: 0 0 10px rgba(0,230,118,0.6);
       pointer-events: none;
       opacity: 0;
       display: none;
@@ -127,10 +131,11 @@
       text-align: center;
       display: none;
       pointer-events: none;
-      background: rgba(255, 255, 255, 0.93);
+      background: rgba(18, 12, 38, 0.96);
       padding: 36px 52px;
       border-radius: 20px;
-      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     #game-over.visible {
@@ -140,13 +145,13 @@
 
     #game-over h2 {
       margin-bottom: 16px;
-      color: #1a1a2e;
+      color: #fff;
       font-size: 30px;
     }
 
     #game-over p {
       margin-bottom: 8px;
-      color: #555;
+      color: #ccc;
       font-size: 18px;
     }
 
@@ -156,17 +161,19 @@
       font-size: 18px;
       font-weight: bold;
       color: white;
-      background: #e91e63;
+      background: linear-gradient(135deg, #FF007A, #7928CA);
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       font-family: Arial, sans-serif;
-      transition: background 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
     }
 
     #game-over .restart-btn:hover {
-      background: #c2185b;
+      opacity: 0.9;
+      transform: scale(1.03);
     }
+  </style>
 
   <script>
     window.addEventListener('error', function(e) {
