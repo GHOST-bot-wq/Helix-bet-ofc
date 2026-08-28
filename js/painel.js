@@ -511,7 +511,7 @@ function renderPainel(el) {
       .pnl-root::before {
         content: '';
         position: absolute; inset: 0; z-index: 0;
-        background: url('/img/game-bg.png') center center / cover no-repeat;
+        background: url('/img/game-bg-v2.png') center center / cover no-repeat;
         opacity: 0.28;
         pointer-events: none;
       }
@@ -2297,5 +2297,4 @@ function renderPainel(el) {
   // ── Boot ─────────────────────────────────────────────────────────────────
   updateMetaPreview();
   loadDashboard();
-  loadGameConfigs();
-}
+  loadGameConfigs()
