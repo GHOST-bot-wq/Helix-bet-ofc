@@ -92,15 +92,15 @@ function renderPainel(el) {
         <button id="btn-sacar" style="display:none"></button>
         <button id="btn-indicar" style="display:none"></button>
         <span id="st-saldo" style="display:none"></span>
-        <!-- ── Banner slider ─────────────────────────────────────────── -->
-        <div id="pnl-banner-wrap" style="display:none;margin:14px auto 0;padding:0 12px;box-sizing:border-box;position:relative">
-          <div id="pnl-banner-track" style="display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);border-radius:14px;overflow:hidden">
+        <!-- ── Promo slider ──────────────────────────────────────────── -->
+        <div id="pnl-promo-wrap" style="display:none;margin:14px auto 0;padding:0 12px;box-sizing:border-box;position:relative">
+          <div id="pnl-promo-track" style="display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);border-radius:14px;overflow:hidden">
           </div>
           <!-- dots -->
-          <div id="pnl-banner-dots" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2"></div>
+          <div id="pnl-promo-dots" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2"></div>
           <!-- arrows -->
-          <button id="pnl-banner-prev" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;backdrop-filter:blur(4px)">‹</button>
-          <button id="pnl-banner-next" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;backdrop-filter:blur(4px)">›</button>
+          <button id="pnl-promo-prev" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;backdrop-filter:blur(4px)">‹</button>
+          <button id="pnl-promo-next" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;backdrop-filter:blur(4px)">›</button>
         </div>
 
         <!-- ── Dicas rotativas ───────────────────────────────────────── -->
@@ -763,19 +763,19 @@ function renderPainel(el) {
       .pnl-action-outline:hover { background: rgba(255,255,255,.25); }
 
       /* ── Dicas rotativas ────────────────────────────────────────── */
-      /* ── Banner responsivo ──────────────────────────────────────── */
-      #pnl-banner-wrap {
+      /* ── Promo slider responsivo ────────────────────────────────── */
+      #pnl-promo-wrap {
         width: 100%;
         box-sizing: border-box;
       }
-      #pnl-banner-wrap img {
+      #pnl-promo-wrap img {
         width: 100%;
         height: auto;
         display: block;
       }
       /* Desktop: limita largura e centraliza tudo no mesmo eixo */
       @media (min-width: 600px) {
-        #pnl-banner-wrap,
+        #pnl-promo-wrap,
         .pnl-tips-wrap,
         .pnl-game-card {
           max-width: 860px;
@@ -783,7 +783,7 @@ function renderPainel(el) {
           margin-right: auto !important;
           box-sizing: border-box;
         }
-        #pnl-banner-wrap {
+        #pnl-promo-wrap {
           padding: 0 12px;
         }
         .pnl-tips-wrap {
@@ -2213,11 +2213,11 @@ function renderPainel(el) {
 
   // ── Banners ──────────────────────────────────────────────────────────────
   (function initBanners() {
-    const wrap  = document.getElementById('pnl-banner-wrap');
-    const track = document.getElementById('pnl-banner-track');
-    const dots  = document.getElementById('pnl-banner-dots');
-    const prev  = document.getElementById('pnl-banner-prev');
-    const next  = document.getElementById('pnl-banner-next');
+    const wrap  = document.getElementById('pnl-promo-wrap');
+    const track = document.getElementById('pnl-promo-track');
+    const dots  = document.getElementById('pnl-promo-dots');
+    const prev  = document.getElementById('pnl-promo-prev');
+    const next  = document.getElementById('pnl-promo-next');
     if (!wrap) return;
 
     let banners = [];
