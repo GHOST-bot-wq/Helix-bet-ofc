@@ -1863,6 +1863,7 @@ function public_config()
 
     json_response(array(
         'site_nome'        => cfg('site_nome',        'HelixWin'),
+        'mapa_ativo'       => cfg('mapa_ativo',       'padrao'),
         'site_descricao'   => cfg('site_descricao',   ''),
         'site_suporte'     => cfg('site_suporte',     ''),
         'site_promo'       => cfg('site_promo',       ''),
