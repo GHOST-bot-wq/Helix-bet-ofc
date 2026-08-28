@@ -201,7 +201,7 @@ async function route() {
     cleanupFn = await renderer(pageEl) || null;
   }
   // Aplicar branding dinâmico (nome da plataforma, suporte, etc.)
-  applyBranding(true); // sempre busca config atualizada ao navegar
+  applyBranding(false); // sempre usa o cache se disponível para navegação instantânea
 
   // Scroll ao topo
   window.scrollTo({ top: 0, behavior: 'instant' });

@@ -1183,7 +1183,7 @@ function renderPainel(el) {
   async function loadGameConfigs() {
     try {
       // Carrega config pública para checar demo_mode e manutencao
-      const pubCfg = await fetch('/api/public/config?_=' + Date.now()).then(r => r.json()).catch(() => ({}));
+      const pubCfg = await getPublicConfig(false);
 
       // Nome da plataforma
       if (pubCfg.site_nome) {
@@ -2285,8 +2285,7 @@ function renderPainel(el) {
     });
 
     // Load banners from public config
-    fetch('/api/public/config?_=' + Date.now())
-      .then(r => r.json())
+    getPublicConfig(false)
       .then(cfg => {
         const list = cfg.banners && cfg.banners.length ? cfg.banners : (cfg.banner_url ? [{ url: cfg.banner_url, link: cfg.banner_link || '' }] : []);
         renderBanners(list);
