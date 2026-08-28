@@ -574,193 +574,362 @@ ul { list-style: none; }
 }
 .lnd-cta-sm:hover { transform: translateY(-1px); background: var(--primary-hover); box-shadow: 0 6px 20px rgba(250,204,21,0.45); }
 
-/* ── Hero ── */
-@keyframes lnd-orb-drift {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-26px) scale(1.05); }
-}
+/* ─── Hero Redesign (Foto 2 Pixel-Perfect) ─────────────────────────────────── */
 .lnd-hero {
-  min-height: 100vh; display: flex; align-items: center;
-  position: relative; overflow: hidden; padding: 80px 24px 60px;
-  background:
-    linear-gradient(160deg, rgba(9, 8, 18, 0.90) 0%, rgba(26, 10, 50, 0.65) 55%, rgba(9, 8, 18, 0.95) 100%),
-    url('../images/game-bg.png') center/cover no-repeat;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 100px 24px 40px;
+  background: 
+    radial-gradient(ellipse at center, rgba(9, 8, 18, 0.25) 0%, rgba(9, 8, 18, 0.85) 100%),
+    url('../images/game-bg.png') center center / cover no-repeat;
 }
-.lnd-orbs { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-.lnd-orb {
-  position: absolute; border-radius: 50%; filter: blur(70px);
-  animation: lnd-orb-drift 8s ease-in-out infinite;
+
+.lnd-hero-main-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: calc(100vh - 160px);
 }
+
 .lnd-hero-inner {
-  position: relative; z-index: 2;
-  max-width: 1200px; margin: 0 auto; width: 100%;
-  display: flex; align-items: center; justify-content: space-between; gap: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  width: 100%;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 20px 0;
 }
-.lnd-hero-left { max-width: 600px; }
 
-/* Live badge */
-@keyframes lnd-ping { 0% { transform:scale(1); opacity:1; } 100% { transform:scale(2.4); opacity:0; } }
+/* Coluna Esquerda */
+.lnd-hero-left {
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Badge '⚡ ENTRE NO JOGO' */
 .lnd-live-badge {
-  display: inline-flex; align-items: center; gap: 9px;
-  background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3);
-  backdrop-filter: blur(10px); border-radius: 50px;
-  padding: 7px 18px; margin-bottom: 24px;
-  font-size: 13px; font-weight: 700; color: #fff;
-  text-transform: uppercase; letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 16, 28, 0.85);
+  border: 1.5px solid #FACC15;
+  border-radius: 50px;
+  padding: 6px 18px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);
 }
-.lnd-live-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--primary); flex-shrink: 0; position: relative;
-}
-.lnd-live-dot::after {
-  content: ''; position: absolute; inset: -3px; border-radius: 50%;
-  border: 2px solid var(--primary); animation: lnd-ping 1.6s ease-out infinite;
+.lnd-badge-icon {
+  color: #FACC15;
+  font-size: 14px;
 }
 
-/* Title */
+/* Headline 'DINHEIRO FÁCIL' */
 .lnd-title {
-  font-size: clamp(46px, 9vw, 88px); font-weight: 900; line-height: 0.95;
-  color: #fff; margin-bottom: 22px; letter-spacing: -2px;
+  font-family: 'Poppins', 'Montserrat', sans-serif;
+  font-size: clamp(52px, 7vw, 92px);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.95;
+  color: #FFFFFF;
+  margin: 0 0 12px 0;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  text-shadow: 0 8px 30px rgba(0,0,0,0.8);
+}
+.lnd-title .yellow-text {
+  color: #FACC15;
+  text-shadow: 0 0 35px rgba(250, 204, 21, 0.4);
+}
+
+/* Subheadline 'JOGUE. GANHE. SAQUE.' */
+.lnd-sub-headline {
+  font-family: 'Poppins', 'Montserrat', sans-serif;
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 900;
+  font-style: italic;
+  color: #FFFFFF;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
-.lnd-title span.yellow-text { color: var(--primary); }
+.lnd-sub-headline .yellow-text {
+  color: #FACC15;
+}
 
-/* Subtitle */
+/* Texto de Apoio */
 .lnd-sub {
-  font-size: 18px; color: rgba(255,255,255,0.7);
-  line-height: 1.6; margin-bottom: 32px; max-width: 460px;
+  font-size: 17px;
+  color: rgba(245, 243, 255, 0.85);
+  line-height: 1.5;
+  margin-bottom: 28px;
+  max-width: 480px;
 }
-.lnd-sub strong { color: var(--primary); font-weight: 800; }
+.purple-text { color: #A855F7; font-weight: 700; }
+.green-text  { color: #22C55E; font-weight: 700; }
 
-/* Actions */
-.lnd-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 38px; }
-@media (min-width: 520px) {
-  .lnd-actions { flex-direction: row; align-items: center; gap: 18px; }
+/* Bloco de Ações */
+.lnd-actions-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
 }
 
-@keyframes lnd-glow {
-  0%, 100% { box-shadow: 0 4px 20px rgba(250, 204, 21, 0.4); }
-  50% { box-shadow: 0 8px 32px rgba(250, 204, 21, 0.65), 0 0 50px rgba(250, 204, 21, 0.18); }
+/* Botão CTA Principal */
+@keyframes cta-pulse-glow {
+  0%, 100% { box-shadow: 0 0 25px rgba(250, 204, 21, 0.5), 0 4px 16px rgba(0,0,0,0.5); }
+  50%      { box-shadow: 0 0 45px rgba(250, 204, 21, 0.8), 0 8px 24px rgba(0,0,0,0.7); }
 }
+
 .lnd-cta-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--primary);
-  color: #090812; font-weight: 800; font-size: 17px;
-  padding: 18px 44px; border-radius: 50px; border: none; cursor: pointer;
-  animation: lnd-glow 2.5s ease-in-out infinite;
-  transition: transform 0.2s, background-color 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #FACC15;
+  color: #090812;
+  font-weight: 900;
+  font-size: 18px;
+  padding: 18px 46px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  animation: cta-pulse-glow 2.5s ease-in-out infinite;
+  transition: transform 0.2s, background-color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.lnd-cta-btn:hover { transform: translateY(-2px) scale(1.02); background: var(--primary-hover); }
-.lnd-cta-btn:active { transform: scale(0.97); }
-
-.lnd-ghost-btn {
-  background: transparent; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.62); font-size: 15px; font-weight: 600;
-  transition: color 0.2s; padding: 10px 0;
+.lnd-cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: #FDE047;
 }
-.lnd-ghost-btn:hover { color: #fff; }
+.lnd-cta-btn:active {
+  transform: scale(0.98);
+}
 
 /* Microcopy */
 .lnd-microcopy {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 4px;
 }
-@media (max-width: 519px) {
-  .lnd-actions { align-items: center; width: 100%; }
-  .lnd-cta-btn { width: 100%; }
-  .lnd-microcopy { width: 100%; justify-content: center; }
+.micro-item { display: inline-flex; align-items: center; gap: 6px; }
+.micro-diamond { color: #10B981; font-size: 13px; }
+.micro-sep { color: rgba(255, 255, 255, 0.3); }
+
+/* Coluna Direita: Widget ÚLTIMOS GANHOS */
+.lnd-hero-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-/* Benefícios Hero */
-.lnd-benefits-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 48px;
-  width: 100%;
+.lnd-wins-widget {
+  background: rgba(18, 14, 32, 0.75);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(124, 58, 237, 0.15);
 }
-@media (max-width: 768px) {
-  .lnd-benefits-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 32px;
-  }
-}
-.lnd-benefit-card {
-  background: #1C1928;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 16px 20px;
+
+.lnd-wins-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
 }
-.lnd-benefit-icon {
-  font-size: 20px;
-  color: var(--primary);
-  background: rgba(250, 204, 21, 0.1);
-  width: 42px;
-  height: 42px;
+.wins-trophy { font-size: 16px; }
+
+.lnd-wins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lnd-win-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s, background 0.2s;
+}
+.lnd-win-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(3px);
+}
+
+.lnd-win-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+.av-purple { background: linear-gradient(135deg, #7C3AED, #9333EA); }
+.av-blue   { background: linear-gradient(135deg, #0284C7, #38BDF8); }
+.av-orange { background: linear-gradient(135deg, #EA580C, #FB923C); }
+
+.lnd-win-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.lnd-win-user {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+.lnd-win-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: #22C55E;
+}
+.lnd-win-time {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+.lnd-win-star {
+  color: #FACC15;
+  font-size: 18px;
+  margin-left: auto;
+}
+
+/* Barra Inferior (4 Cards) */
+.lnd-bottom-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.lnd-bottom-card {
+  background: rgba(18, 14, 32, 0.75);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.lnd-bottom-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.5);
+}
+
+.lnd-bcard-icon {
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.lnd-benefit-info {
+.icon-purple {
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  color: #A855F7;
+}
+.icon-green {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #22C55E;
+}
+
+.lnd-bcard-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.lnd-benefit-title {
+.bcard-title {
   font-size: 12px;
   font-weight: 800;
-  color: var(--text-white);
+  color: #FFFFFF;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.lnd-benefit-desc {
+.bcard-desc {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Trust badges (legacy - mantidos se necessário em outra página) */
-.lnd-trust { display: flex; flex-wrap: wrap; gap: 10px; }
-.lnd-trust-item {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
-  border-radius: 50px; padding: 6px 14px;
-  font-size: 13px; font-weight: 600; color: #a78bfa;
+/* Responsividade Mobile */
+@media (max-width: 960px) {
+  .lnd-bottom-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lnd-hero-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .lnd-hero-left {
+    align-items: center;
+    max-width: 100%;
+  }
+  .lnd-actions-block {
+    align-items: center;
+    width: 100%;
+  }
+  .lnd-cta-btn {
+    width: 100%;
+    max-width: 380px;
+  }
+  .lnd-hero-right {
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+  }
 }
 
-/* Win notification cards */
-.lnd-wins-col { display: flex; flex-direction: column; gap: 14px; }
-@keyframes lnd-float-card {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+@media (max-width: 540px) {
+  .lnd-bottom-bar {
+    grid-template-columns: 1fr;
+  }
+  .lnd-title {
+    font-size: 52px;
+  }
 }
-.lnd-win-card {
-  background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border-radius: 18px; padding: 14px 18px;
-  display: flex; align-items: center; gap: 12px; min-width: 235px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.40);
-  animation: lnd-float-card 4s ease-in-out infinite;
-}
-.lnd-win-avatar {
-  width: 42px; height: 42px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px; font-weight: 800; color: #fff; flex-shrink: 0;
-}
-.lnd-win-info { flex: 1; min-width: 0; }
-.lnd-win-name   { font-size: 12px; color: rgba(255,255,255,0.58); font-weight: 600; }
-.lnd-win-amount { font-size: 20px; font-weight: 800; color: #00e882; line-height: 1.2; }
-.lnd-win-label  { font-size: 11px; color: rgba(255,255,255,0.38); }
 
 /* ── Stats bar ── */
 .lnd-stats {
@@ -861,73 +1030,6 @@ ul { list-style: none; }
   padding: 12px 16px; border: 1px solid rgba(255,255,255,0.07); border-radius: 10px;
 }
 .lnd-footer-copy { font-size: 12px; color: rgba(255,255,255,0.22); }
-
-/* ── Responsive ── */
-@media (max-width: 780px) {
-  .lnd-hero-inner { flex-direction: column; }
-  .lnd-hero-left { text-align: center; max-width: 100%; }
-  .lnd-live-badge { margin: 0 auto 26px; }
-  .lnd-sub { margin-left: auto; margin-right: auto; }
-  .lnd-actions { justify-content: center; }
-  .lnd-trust { justify-content: center; }
-  .lnd-title em { display: inline; }
-}
-
-/* ── Coluna direita (taça + notificações) ──────────────────────────────── */
-/* ── Coluna direita (elemento visual do Helix Jump) ─────────────────────── */
-.lnd-right-col {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  max-width: 500px;
-  position: relative;
-  z-index: 2;
-}
-
-.lnd-game-visual {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  animation: game-float 4.5s ease-in-out infinite;
-}
-
-.lnd-game-img {
-  width: 100%;
-  height: auto;
-  max-height: 520px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 32px rgba(124, 58, 237, 0.45))
-          drop-shadow(0 20px 40px rgba(0,0,0,0.6));
-}
-
-.lnd-game-glow {
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124,58,237,0.22) 0%, rgba(244,114,182,0.06) 60%, transparent 80%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes game-float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50%       { transform: translateY(-12px) rotate(0.5deg); }
-}
-
-@media (max-width: 780px) {
-  .lnd-right-col {
-    max-width: 100%;
-    margin-top: 24px;
-    width: 100%;
-  }
-  .lnd-game-img {
-    max-height: 360px;
-  }
-}
 
 /* ── Partículas de bolinhas ─────────────────────────────────────────────── */
 #lnd-particles {
