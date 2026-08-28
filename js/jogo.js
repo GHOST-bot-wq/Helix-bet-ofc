@@ -24,7 +24,7 @@ function renderJogo(container) {
     <div id="jogo-wrapper" style="position:relative;width:100%;height:100vh;overflow:hidden;background:#0a0a1a">
 
       <!-- iframe do jogo Three.js (src já inclui ?dif= e ?inf= e ?kco= para funcionar no mobile) -->
-      <iframe id="game-iframe" src="jogo/index.html?v=3.1.2&_t=${Date.now()}&dif=${encodeURIComponent(_difInicial)}&inf=${_infInicial}${_kcoInicial !== '' ? '&kco=' + encodeURIComponent(_kcoInicial) : ''}"
+      <iframe id="game-iframe" src="/jogo/index.html?v=3.1.2&_t=${Date.now()}&dif=${encodeURIComponent(_difInicial)}&inf=${_infInicial}${_kcoInicial !== '' ? '&kco=' + encodeURIComponent(_kcoInicial) : ''}"
         style="width:100%;height:100%;border:none;display:block"
         allow="accelerometer; autoplay"
         title="Game">
@@ -278,6 +278,34 @@ function renderJogo(container) {
       @keyframes slideDown {
         from { transform:translateY(-20px); opacity:0; }
         to   { transform:translateY(0);     opacity:1; }
+      }
+      
+      @media (max-width: 480px) {
+        #hud-container {
+          padding: 8px 10px 14px !important;
+        }
+        #hud-aposta, #hud-meta-label {
+          font-size: 13px !important;
+        }
+        #hud-acumulado {
+          font-size: 16px !important;
+        }
+        #hud-meta {
+          font-size: 12px !important;
+        }
+        #hud-plat {
+          font-size: 9px !important;
+          margin-top: 2px !important;
+        }
+        #btn-resgatar {
+          bottom: 74px !important;
+          font-size: 15px !important;
+          padding: 12px 24px !important;
+        }
+        #btn-resgatar-hint {
+          bottom: 50px !important;
+          font-size: 9px !important;
+        }
       }
     </style>
   `;

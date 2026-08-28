@@ -1172,6 +1172,65 @@ function renderPainel(el) {
 
       /* ── Utilitários ───────────────────────────────────────────── */
       .hidden { display: none !important; }
+
+      @media (max-width: 480px) {
+        .pnl-header {
+          padding: 0 10px;
+        }
+        .pnl-logo span {
+          display: none;
+        }
+        .pnl-saldo-chip {
+          padding: 4px 8px;
+        }
+        .pnl-saldo-chip-val {
+          font-size: 13px;
+        }
+        .pnl-avatar {
+          width: 32px;
+          height: 32px;
+          font-size: 13px;
+        }
+        .pnl-game-card {
+          padding: 16px 14px 14px;
+          margin: 0 8px 12px;
+          border-radius: 16px;
+        }
+        .pnl-game-title {
+          font-size: 16px;
+        }
+        .pnl-game-badge {
+          padding: 4px 8px;
+          font-size: 10px;
+        }
+        .pnl-bet-center .pnl-input-wrap {
+          max-width: 100%;
+        }
+        .pnl-bet-center .pnl-input {
+          font-size: 22px;
+        }
+        .pnl-meta-row {
+          padding: 8px;
+          gap: 4px;
+        }
+        .pnl-meta-val {
+          font-size: 12px;
+        }
+        .pnl-meta-lbl {
+          font-size: 8px;
+        }
+        .pnl-input-modal, .pnl-modal .pnl-input {
+          font-size: 16px !important;
+        }
+        .dep-amount-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+        }
+        .pnl-quick {
+          font-size: 13px;
+          padding: 8px 6px;
+        }
+      }
     </style>
   `;
 

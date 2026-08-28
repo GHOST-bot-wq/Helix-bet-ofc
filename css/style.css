@@ -920,6 +920,10 @@ ul { list-style: none; }
     width: 100%;
     margin-top: 20px;
   }
+  .lnd-wins-widget {
+    width: 100%;
+    max-width: 320px;
+  }
 }
 
 @media (max-width: 540px) {
@@ -927,7 +931,47 @@ ul { list-style: none; }
     grid-template-columns: 1fr;
   }
   .lnd-title {
-    font-size: 52px;
+    font-size: clamp(36px, 11vw, 48px);
+    letter-spacing: -1px;
+  }
+  .lnd-sub-headline {
+    font-size: 20px;
+  }
+  .lnd-hero {
+    padding: 80px 14px 40px;
+  }
+  .lnd-nav {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .lnd-nav-brand {
+    font-size: 18px;
+    gap: 6px;
+  }
+  .lnd-nav-brand img {
+    height: 38px !important;
+  }
+  .lnd-nav-link {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .lnd-cta-sm {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+  .lnd-stats {
+    padding: 24px 12px;
+    gap: 16px;
+    flex-direction: column;
+  }
+  .lnd-stat {
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding-bottom: 12px;
+  }
+  .lnd-stat:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
   }
 }
 
@@ -1039,4 +1083,19 @@ ul { list-style: none; }
   height: 100%;
   pointer-events: none;
   z-index: 1;
+}
+
+/* ── Orbs da Landing Page (Glow / Ambient Lighting) ── */
+.lnd-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.lnd-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
 }

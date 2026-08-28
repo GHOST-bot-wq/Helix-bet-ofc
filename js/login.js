@@ -37,7 +37,7 @@ function renderLogin(el) {
       .lgn-input {
         width: 100%; padding: 13px 16px; border-radius: 12px;
         background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.12);
-        color: #fff; font-size: 15px; font-family: inherit;
+        color: #fff; font-size: 16px; font-family: inherit;
         outline: none; transition: border-color 0.2s, background 0.2s;
       }
       .lgn-input::placeholder { color: rgba(255,255,255,0.28); }
@@ -83,6 +83,20 @@ function renderLogin(el) {
         cursor: pointer; background: none; border: none; transition: color 0.2s;
       }
       .lgn-back:hover { color: rgba(255,255,255,0.55); }
+      
+      @media (max-width: 480px) {
+        .lgn-wrap {
+          padding: 28px 20px;
+          border-radius: 18px;
+        }
+        .lgn-title {
+          font-size: 22px;
+        }
+        .lgn-sub {
+          margin-bottom: 24px;
+          font-size: 13px;
+        }
+      }
     </style>
 
     <div class="lgn-wrap">

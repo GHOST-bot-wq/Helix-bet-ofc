@@ -40,7 +40,7 @@ function renderCadastro(el) {
       .reg-input {
         width: 100%; padding: 13px 16px; border-radius: 12px;
         background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.12);
-        color: #fff; font-size: 15px; font-family: inherit;
+        color: #fff; font-size: 16px; font-family: inherit;
         outline: none; transition: border-color 0.2s, background 0.2s;
       }
       .reg-input::placeholder { color: rgba(255,255,255,0.28); }
@@ -105,6 +105,23 @@ function renderCadastro(el) {
         cursor: pointer; background: none; border: none; transition: color 0.2s;
       }
       .reg-back:hover { color: rgba(255,255,255,0.55); }
+      
+      @media (max-width: 480px) {
+        .reg-wrap {
+          padding: 28px 20px;
+          border-radius: 18px;
+        }
+        .reg-title {
+          font-size: 22px;
+        }
+        .reg-sub {
+          margin-bottom: 22px;
+          font-size: 13px;
+        }
+        .reg-group {
+          margin-bottom: 14px;
+        }
+      }
     </style>
 
     <div class="reg-wrap">
