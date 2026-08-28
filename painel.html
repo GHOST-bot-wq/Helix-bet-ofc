@@ -64,7 +64,7 @@ body::after{
   position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-#app{position:relative;z-index:1}
+#app{position:relative;z-index:1;opacity:0}
 
 /* ============================================================
    HEADER
@@ -1111,10 +1111,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('hw_token');
   if (!token) { window.location.href = '/#login'; return; }
 
-  // Aplica cores dinâmicas do tema
+  const appEl = document.getElementById('app');
+  if (appEl) appEl.style.opacity = '0';
+
   try {
-    const r = await fetch('/api/public/config?_=' + Date.now());
-    const cfg = await r.json();
+    // Carrega em paralelo todos os dados críticos necessários para renderizar o painel
+    const [cfg, dashData, meData] = await Promise.all([
+      fetch('/api/public/config?_=' + Date.now()).then(r => r.json()).catch(() => ({})),
+      apiFetch('GET', '/user/dashboard').catch(() => ({})),
+      apiFetch('GET', '/auth/me').catch(() => ({}))
+    ]);
+
+    // 1. Aplica cores dinâmicas do tema
     if (cfg.cores) {
       const root = document.documentElement;
       const c = cfg.cores;
@@ -1136,11 +1144,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (cfg.dep_presets && cfg.dep_presets.length) {
       renderDepPresets(cfg.dep_presets);
     }
-  } catch(_) {}
 
-  await loadDashboard();
-  await loadHistorico();
-  await loadIndicacao();
+    // 2. Preenche dados do dashboard (saldo)
+    STATE.saldo = parseFloat(dashData.saldo) || 0;
+    STATE.saldoAfil = parseFloat(dashData.saldo_afiliado) || 0;
+
+    const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('heroSaldo').textContent   = fmt(STATE.saldo);
+    document.getElementById('headerSaldo').textContent = fmt(STATE.saldo);
+    document.getElementById('saqSaldoDisp').textContent = fmt(STATE.saldo);
+
+    // Rollover
+    const rv = dashData.rollover || {};
+    renderRolloverBadge(rv);
+
+    // 3. Preenche dados do usuário
+    const u  = meData.user || {};
+    STATE.user = u;
+    populateUserUI(u);
+
+    // Stats iniciais (serão preenchidos ao carregar o histórico)
+    document.getElementById('statDep').textContent   = fmt(0);
+    document.getElementById('statSaq').textContent   = fmt(0);
+    document.getElementById('statApost').textContent = fmt(0);
+    document.getElementById('statLucro').textContent = fmt(0);
+
+    // 4. Exibe a interface completa de uma vez só!
+    if (appEl) {
+      appEl.style.transition = 'opacity 0.2s ease-in-out';
+      appEl.style.opacity = '1';
+    }
+
+    // 5. Carrega dados secundários e não críticos em segundo plano (não-bloqueante)
+    loadHistorico();
+    loadIndicacao();
+
+  } catch (e) {
+    if (appEl) appEl.style.opacity = '1';
+    toast('Erro ao carregar os dados iniciais do painel: ' + e.message, 'error');
+  }
+
   document.addEventListener('click', handleOutsideClick);
 });
 
@@ -1208,19 +1251,7 @@ async function loadDashboard() {
     // Rollover
     const rv = data.rollover || {};
     renderRolloverBadge(rv);
-
-    // Tenta carregar dados do me
-    const me = await apiFetch('GET', '/auth/me');
-    const u  = me.user || {};
-    STATE.user = u;
-    populateUserUI(u);
-
-    // Stats (simplificado — carregar do histórico depois)
-    document.getElementById('statDep').textContent   = fmt(0);
-    document.getElementById('statSaq').textContent   = fmt(0);
-    document.getElementById('statApost').textContent = fmt(0);
-    document.getElementById('statLucro').textContent = fmt(0);
-  } catch(e) { toast('Erro ao carregar dados: ' + e.message, 'error'); }
+  } catch(e) { toast('Erro ao carregar dados do dashboard: ' + e.message, 'error'); }
 }
 
 function renderRolloverBadge(rv) {
@@ -1565,11 +1596,16 @@ async function salvarPerfil() {
       await apiFetch('PUT', '/user/senha', { senha_atual: senhaAt, senha_nova: senhaNova });
     }
     toast('Perfil atualizado com sucesso!','success');
+    const me = await apiFetch('GET', '/auth/me').catch(() => ({}));
+    if (me && me.user) {
+      STATE.user = me.user;
+      populateUserUI(me.user);
+    }
+    await loadDashboard();
+    closeModal('modalPerfil');
     document.getElementById('editSenhaAtual').value = '';
     document.getElementById('editSenhaNova').value  = '';
     document.getElementById('editSenhaConf').value  = '';
-    await loadDashboard();
-    closeModal('modalPerfil');
   } catch(e) {
     toast(e.message, 'error');
   } finally {

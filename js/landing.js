@@ -3,9 +3,10 @@ function renderLanding(el) {
   el.innerHTML = `
     <!-- ── Navbar ────────────────────────────────────────────────────── -->
     <nav class="lnd-nav">
-      <div class="lnd-nav-brand brand-logo-wrap">
+      <div class="lnd-nav-brand brand-logo-wrap" onclick="navigate('#landing')">
         <img class="brand-logo-img" src="" alt="logo" style="display:none;height:50px;object-fit:contain"/>
-        
+        <div class="brand-logo-icon" style="font-size:22px;margin-right:8px">🌀</div>
+        <span class="brand-name">HelixWin</span>
       </div>
       <div class="lnd-nav-menu">
         <button class="lnd-nav-link" onclick="navigate('#login')">Entrar</button>
@@ -17,9 +18,9 @@ function renderLanding(el) {
     <div class="lnd-hero">
       <canvas id="lnd-particles" aria-hidden="true"></canvas>
       <div class="lnd-orbs" aria-hidden="true">
-        <div class="lnd-orb" style="width:500px;height:500px;top:-160px;left:-160px;background:rgba(120,0,200,0.16)"></div>
-        <div class="lnd-orb" style="width:360px;height:360px;bottom:4%;right:-90px;background:rgba(255,50,110,0.11);animation-delay:2.5s"></div>
-        <div class="lnd-orb" style="width:260px;height:260px;top:38%;left:36%;background:rgba(0,200,122,0.07);animation-delay:5s"></div>
+        <div class="lnd-orb" style="width:500px;height:500px;top:-160px;left:-160px;background:rgba(124,58,237,0.14)"></div>
+        <div class="lnd-orb" style="width:360px;height:360px;bottom:4%;right:-90px;background:rgba(250,204,21,0.06);animation-delay:2.5s"></div>
+        <div class="lnd-orb" style="width:260px;height:260px;top:38%;left:36%;background:rgba(124,58,237,0.08);animation-delay:5s"></div>
       </div>
 
       <div class="lnd-hero-inner">
@@ -27,140 +28,68 @@ function renderLanding(el) {
         <div class="lnd-hero-left anim-slide">
           <div class="lnd-live-badge">
             <span class="lnd-live-dot"></span>
-            2.847 jogadores online agora
+            ⚡ ENTRE NO JOGO
           </div>
 
-         <!-- Fonte (coloque no <head> do site) -->
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+          <h1 class="lnd-title">
+            DINHEIRO<br><span class="yellow-text">FÁCIL</span>
+          </h1>
 
-<!-- TÍTULO -->
-<h1 class="lnd-title lnd-title-copa">
-  <span class="lnd-title-line"><span class="lnd-t-w">GIRE E</span></span>
-  <span class="lnd-title-line"><span class="lnd-t-g">CONQUISTE</span></span>
-  <span class="lnd-title-line"><span class="lnd-t-gn">O TROFÉU</span></span>
-</h1>
+          <h2 style="font-size: clamp(20px, 4vw, 32px); font-weight: 800; color: #fff; margin-bottom: 20px; letter-spacing: -0.5px; text-transform: uppercase;">
+            JOGUE. <span style="color: var(--primary);">GANHE</span>. SAQUE.
+          </h2>
 
-<!-- CSS -->
-<style>
-.lnd-title-copa {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 75px;
-  line-height: 1.1;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
+          <p class="lnd-sub">
+            Faça sua jogada no Helix Jump e, se ganhar, saque via PIX.
+          </p>
 
-/* quebra de linha */
-.lnd-title-copa .lnd-title-line {
-  display: block;
-}
-
-/* cores simples (sem efeito) */
-.lnd-title-copa .lnd-t-w {
-  color: #eaeaea;
-}
-
-.lnd-title-copa .lnd-t-g {
-  color: #ffcc00;
-}
-
-.lnd-title-copa .lnd-t-gn {
-  color: #39ff88;
-}
-</style>
-
-         <style>
-  .lnd-sub {
-    font-size: 16px;
-    color: #ffffff;
-    line-height: 1.5;
-  }
-
-  .destaque {
-    color: #ffcc00; /* amarelo */
-    font-weight: bold;
-   
-  }
-</style>
-
-<p class="lnd-sub">
-  Entre no clima da <span class="destaque">Copa</span> com Helix Jump e ganhe jogando.
-  transforme habilidade em prêmio 
-  <span class="destaque">Saque via PIX quando quiser!</span>
-</p>
-
-          <div class="brand-promo" style="display:none;margin-bottom:12px;background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(16,185,129,.1));border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;color:#4ade80;text-align:center"></div>
+          <div class="brand-promo" style="display:none;margin-bottom:12px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(250,204,21,.1));border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;color:var(--primary);text-align:center"></div>
 
           <div class="lnd-actions">
             <button class="lnd-cta-btn" id="btn-jogar-gratis">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span id="btn-jogar-label">JOGAR AGORA</span>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="margin-right:6px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span id="btn-jogar-label">DEPOSITAR E JOGAR</span>
             </button>
             <button class="lnd-ghost-btn" onclick="navigate('#login')">Já tenho conta &rarr;</button>
+            <div class="lnd-microcopy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="13" height="13" style="color:#22C55E;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>
+              Depósito via PIX  •  Saque via PIX
+            </div>
           </div>
 
-          <div class="lnd-trust">
-            <span class="lnd-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
-              Saque via PIX
-            </span>
-            <span class="lnd-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
-              Depósito mín. <span id="lnd-dep-min">R$10</span>
-            </span>
-            <span class="lnd-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
-              Resultado na hora
-            </span>
-          </div>
-
-          <!-- Taça exclusiva MOBILE (abaixo dos trust badges) -->
-          <div class="lnd-trophy-mobile">
-            <img class="lnd-trophy-svg-mob" src="https://i.ibb.co/cKmwyfP3/World-Cup.png" alt="Taça"/>
-            <div class="lnd-trophy-glow-mob"></div>
+          <!-- Benefícios organizados em cards na parte inferior da Hero -->
+          <div class="lnd-benefits-row">
+            <div class="lnd-benefit-card">
+              <div class="lnd-benefit-icon">⚡</div>
+              <div class="lnd-benefit-info">
+                <span class="lnd-benefit-title">COMECE AGORA</span>
+                <span class="lnd-benefit-desc">Rápido e simples</span>
+              </div>
+            </div>
+            <div class="lnd-benefit-card">
+              <div class="lnd-benefit-icon">▣</div>
+              <div class="lnd-benefit-info">
+                <span class="lnd-benefit-title">DEPÓSITO VIA PIX</span>
+                <span class="lnd-benefit-desc">Liberação imediata</span>
+              </div>
+            </div>
+            <div class="lnd-benefit-card">
+              <div class="lnd-benefit-icon">▣</div>
+              <div class="lnd-benefit-info">
+                <span class="lnd-benefit-title">SAQUE VIA PIX</span>
+                <span class="lnd-benefit-desc">Quando disponível</span>
+              </div>
+            </div>
           </div>
 
         </div>
 
-        <!-- Coluna direita: taça + notificações -->
+        <!-- Coluna direita: elemento visual do Helix Jump em 3D -->
         <div class="lnd-right-col">
-
-          <!-- Taça posicionada no topo direito -->
-          <div class="lnd-trophy-wrap">
-            <img class="lnd-trophy-svg" src="https://i.ibb.co/cKmwyfP3/World-Cup.png" alt="Taça"/>
-            <div class="lnd-trophy-glow"></div>
+          <div class="lnd-game-visual">
+            <img class="lnd-game-img" src="images/game-bg.png" alt="Helix Jump" />
+            <div class="lnd-game-glow"></div>
           </div>
-
-        <!-- Notificações de ganhos flutuantes -->
-        <div class="lnd-wins-col">
-          <div class="lnd-win-card" style="animation-delay:0s">
-            <div class="lnd-win-avatar" style="background:linear-gradient(135deg,#e8c547,#FF8CC8)">C</div>
-            <div class="lnd-win-info">
-              <div class="lnd-win-name">Carlos ganhou</div>
-              <div class="lnd-win-amount">+R$ 70,00</div>
-              <div class="lnd-win-label">há 2 minutos</div>
-            </div>
-            <svg viewBox="0 0 24 24" fill="#FFB800" width="22" height="22"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-          </div>
-          <div class="lnd-win-card" style="animation-delay:1.4s">
-            <div class="lnd-win-avatar" style="background:linear-gradient(135deg,#4D9EFF,#00C97A)">A</div>
-            <div class="lnd-win-info">
-              <div class="lnd-win-name">Ana ganhou</div>
-              <div class="lnd-win-amount">+R$ 45,00</div>
-              <div class="lnd-win-label">há 5 minutos</div>
-            </div>
-            <svg viewBox="0 0 24 24" fill="#FFB800" width="22" height="22"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-          </div>
-          <div class="lnd-win-card" style="animation-delay:2.8s">
-            <div class="lnd-win-avatar" style="background:linear-gradient(135deg,#FFB800,#FF8C42)">L</div>
-            <div class="lnd-win-info">
-              <div class="lnd-win-name">Lucas ganhou</div>
-              <div class="lnd-win-amount">+R$ 14,00</div>
-              <div class="lnd-win-label">há 8 minutos</div>
-            </div>
-            <svg viewBox="0 0 24 24" fill="#FFB800" width="22" height="22"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-          </div>
-        </div>
         </div> <!-- /lnd-right-col -->
       </div>
     </div>
