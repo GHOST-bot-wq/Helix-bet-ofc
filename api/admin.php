@@ -632,8 +632,26 @@ function adm_upload($admin)
         }
     }
 
-    if (!is_writable($dir)) {
-        error_response('Erro: pasta uploads/banners/ sem permissao de escrita. Acesse o FTP e defina permissao 755 nessa pasta.', 500);
+    $writable = false;
+    $test_file = $dir . 'test_perm_' . uniqid() . '.txt';
+    $err_msg = '';
+    if (@file_put_contents($test_file, '1') !== false) {
+        $writable = true;
+        @unlink($test_file);
+    } else {
+        $last_err = error_get_last();
+        if ($last_err) {
+            $err_msg = ' Detalhes do PHP: ' . $last_err['message'];
+        }
+    }
+
+    if (!$writable) {
+        // Fallback para Vercel/Serverless: se a pasta nao for gravavel, envia para o Catbox.moe
+        $catbox_url = upload_to_catbox($file['tmp_name'], $file['name'], $file['type']);
+        if ($catbox_url) {
+            json_response(['url' => $catbox_url, 'filename' => basename($catbox_url)]);
+        }
+        error_response('Erro: pasta uploads/banners/ sem permissao de escrita.' . $err_msg . ' Acesse o FTP e defina permissao 755 nessa pasta.', 500);
     }
 
     $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -649,6 +667,32 @@ function adm_upload($admin)
     $url      = $protocol . '://' . $host . '/uploads/banners/' . $filename;
 
     json_response(['url' => $url, 'filename' => $filename]);
+}
+
+function upload_to_catbox($file_path, $file_name, $file_type)
+{
+    if (!function_exists('curl_init')) {
+        return null;
+    }
+    $cfile = new CURLFile($file_path, $file_type, $file_name);
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://catbox.moe/user/api.php');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+        'reqtype' => 'fileupload',
+        'fileToUpload' => $cfile
+    ));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    if ($response && strpos($response, 'https://files.catbox.moe/') === 0) {
+        return trim($response);
+    }
+    return null;
 }
 
 function adm_configs_get($admin)
