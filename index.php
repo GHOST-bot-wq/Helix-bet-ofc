@@ -4,6 +4,8 @@
 //  Compativel com PHP 7.2+
 // ===================================================================
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED & ~E_WARNING);
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../rollover_helper.php';
 require_once __DIR__ . '/../includes/afiliado_regra.php';
@@ -916,7 +918,7 @@ function pixup_http($method, $url, $body = null, $headers = array())
 
     $response   = curl_exec($ch);
     $httpStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    @curl_close($ch);
 
     if ($response === false) return false;
 
@@ -1175,7 +1177,16 @@ function amplopay_criar_cobranca($valor, $txidLocal, $cpf, $user = null)
         ),
     );
 
-    if ($webhookUrl) {
+    if (!filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+        $scheme = 'https';
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $scheme = strtolower(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
+        }
+        $host = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+        $webhookUrl = $host ? $scheme . '://' . $host . '/api/amplopay_webhook.php' : '';
+    }
+
+    if ($webhookUrl && filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
         $payload['callbackUrl'] = $webhookUrl;
     }
 
@@ -1209,11 +1220,20 @@ function amplopay_criar_cobranca($valor, $txidLocal, $cpf, $user = null)
     $qrcodeTxt = '';
     $qrcodeImg = '';
 
-    if (!empty($parsed['pix']['code'])) {
+    if (!empty($parsed['pix_copy_paste'])) {
+        $qrcodeTxt = $parsed['pix_copy_paste'];
+    } elseif (!empty($parsed['pix']['code'])) {
         $qrcodeTxt = $parsed['pix']['code'];
     }
-    if (!empty($parsed['pix']['base64'])) {
+
+    if (!empty($parsed['pix_qr_code'])) {
+        $qrcodeImg = $parsed['pix_qr_code'];
+    } elseif (!empty($parsed['pix']['base64'])) {
         $qrcodeImg = $parsed['pix']['base64'];
+    }
+
+    if ($qrcodeImg && strpos($qrcodeImg, 'data:image') !== 0 && @base64_decode($qrcodeImg, true) !== false) {
+        $qrcodeImg = 'data:image/png;base64,' . $qrcodeImg;
     }
 
     if ($qrcodeTxt && !$qrcodeImg) {
@@ -1269,7 +1289,7 @@ function gateway_http($method, $url, $body = null, $headers = array())
 
     $response   = curl_exec($ch);
     $httpStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    @curl_close($ch);
 
     if ($response === false) return false;
 
