@@ -1617,15 +1617,35 @@ function indicacao_info()
     }
 
     // Monta lista formatada apenas dos 30 recentes CONTADOS para exibição
+    $convidadosIds = array();
+    foreach ($indicados as $i) {
+        $idConvidado = (int)$i['id'];
+        if (in_array($idConvidado, $idsIgnorados)) continue;
+        $convidadosIds[] = (string)$idConvidado;
+    }
+
+    $comissoesPorConvidado = array();
+    if (!empty($convidadosIds)) {
+        $placeholders = implode(',', array_fill(0, count($convidadosIds), '?'));
+        $sql = 'SELECT referencia, COALESCE(SUM(valor), 0) as total 
+                FROM transacoes 
+                WHERE usuario_id = ? AND tipo = "bonus_indicacao" AND status = "aprovado" AND referencia IN (' . $placeholders . ') 
+                GROUP BY referencia';
+        
+        $params = array_merge(array($user['id']), $convidadosIds);
+        $stmtC = db()->prepare($sql);
+        $stmtC->execute($params);
+        while ($row = $stmtC->fetch()) {
+            $comissoesPorConvidado[$row['referencia']] = (float)$row['total'];
+        }
+    }
+
     foreach ($indicados as $i) {
         $idConvidado = (int)$i['id'];
         // Omite da lista se estiver ignorado
         if (in_array($idConvidado, $idsIgnorados)) continue;
 
-        $stmtC = db()->prepare('SELECT COALESCE(SUM(valor), 0) as total FROM transacoes WHERE usuario_id = ? AND tipo = "bonus_indicacao" AND referencia = ? AND status = "aprovado"');
-        $stmtC->execute(array($user['id'], (string)$idConvidado));
-        $comissaoRow   = $stmtC->fetch();
-        $totalComissao = isset($comissaoRow['total']) ? (float)$comissaoRow['total'] : 0.0;
+        $totalComissao = isset($comissoesPorConvidado[(string)$idConvidado]) ? $comissoesPorConvidado[(string)$idConvidado] : 0.0;
 
         $indicadosFormatados[] = array(
             'id'                      => $idConvidado,

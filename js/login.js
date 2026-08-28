@@ -8,7 +8,7 @@ function renderLogin(el) {
         padding: 24px 16px;
         background:
           linear-gradient(160deg, rgba(8,0,24,0.82) 0%, rgba(30,0,60,0.60) 55%, rgba(8,0,24,0.90) 100%),
-          url('/img/game-bg-v2.png') center/cover no-repeat scroll;
+          url('/img/game-bg.png') center/cover no-repeat scroll;
       }
       .lgn-wrap {
         width: 100%; max-width: 420px; box-sizing: border-box;

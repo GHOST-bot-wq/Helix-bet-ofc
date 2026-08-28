@@ -9,7 +9,7 @@ define('DB_NAME', 'bavwjmiclz2ptlzhy8nr');
 define('DB_USER', 'u99oi9uyvl3yn5mv');
 define('DB_PASS', 'J3gJK724V6g5590jwihw');
 define('DB_CHARSET', 'utf8mb4');
-define('APP_ENV', 'development');
+define('APP_ENV', 'development'); // troque para 'development' para ver erros
 
 function db()
 {
@@ -26,21 +26,29 @@ function db()
 
 function cfg($chave, $default = null)
 {
-    static $cache = array();
-    if (array_key_exists($chave, $cache)) return $cache[$chave];
-    $stmt = db()->prepare('SELECT valor FROM configuracoes WHERE chave = ? LIMIT 1');
-    $stmt->execute(array($chave));
-    $row = $stmt->fetch();
-    $cache[$chave] = $row ? $row['valor'] : $default;
-    return $cache[$chave];
+    static $cache = null;
+    if ($chave === null) {
+        $cache = null;
+        return null;
+    }
+    if ($cache === null) {
+        $cache = array();
+        try {
+            $stmt = db()->query('SELECT chave, valor FROM configuracoes');
+            while ($row = $stmt->fetch()) {
+                $cache[$row['chave']] = $row['valor'];
+            }
+        } catch (Exception $e) {
+            // Mantém como array vazio se o banco falhar
+        }
+    }
+    return array_key_exists($chave, $cache) ? $cache[$chave] : $default;
 }
 
 // Chamada após salvar configs — limpa o cache estático da mesma requisição
 function cfg_clear_cache()
 {
-    // Cada requisição PHP é um processo separado, então o cache estático
-    // nunca afeta outras requisições. Esta função existe apenas por segurança.
-    // Nada a fazer aqui.
+    cfg(null);
 }
 
 function jwt_create($payload)
