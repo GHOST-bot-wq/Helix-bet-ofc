@@ -569,7 +569,7 @@ ul { list-style: none; }
   position: relative; overflow: hidden; padding: 80px 24px 60px;
   background:
     linear-gradient(160deg, rgba(8,0,24,0.80) 0%, rgba(30,0,60,0.58) 55%, rgba(8,0,24,0.88) 100%),
-    url('../images/game-bg.png') center/cover no-repeat;
+    url('../images/game-bg-v2.png') center/cover no-repeat;
 }
 .lnd-orbs { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
 .lnd-orb {
