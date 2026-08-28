@@ -511,7 +511,7 @@ function renderPainel(el) {
       .pnl-root::before {
         content: '';
         position: absolute; inset: 0; z-index: 0;
-        background: url('/img/game-bg.png') center center / cover no-repeat;
+        background: url('images/game-bg.png') center center / cover no-repeat;
         opacity: 0.28;
         pointer-events: none;
       }
