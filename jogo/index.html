@@ -168,8 +168,12 @@
       background: #c2185b;
     }
 
-  </style>
-  <script type="module" crossorigin="" src="js/index-O5Ori94R.js"></script>
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('[Helix 3D Error]', e.message, e.filename, e.lineno, e.error);
+    });
+  </script>
+  <script type="module" crossorigin="" src="js/index-O5Ori94R.js?v=2.1.0"></script>
 </head>
 <body>
   <div id="game-container">
