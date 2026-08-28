@@ -41,9 +41,9 @@ function renderLanding(el) {
             </p>
 
             <div class="lnd-actions-block">
-              <button class="lnd-cta-btn" onclick="navigate('#cadastro')">
+              <button class="lnd-cta-btn" id="btn-jogar-gratis" onclick="iniciarDemoJogo()">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-                <span>DEPOSITAR E JOGAR</span>
+                <span id="btn-jogar-label">JOGAR AGORA</span>
               </button>
               
               <div class="lnd-microcopy">
@@ -313,12 +313,6 @@ function renderLanding(el) {
           .toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
       }
 
-      // Modo Demo / Cadastro
-      const btnJogar  = document.getElementById('btn-jogar-gratis');
-      if (btnJogar) {
-        btnJogar.onclick = () => navigate('#cadastro');
-      }
-
       // Registro fechado → esconde botões de cadastro
       if (cfg.registro_aberto === false || cfg.registro_aberto === '0') {
         document.querySelectorAll('[onclick*="cadastro"], [onclick*="register"]').forEach(el => {
@@ -334,13 +328,8 @@ function renderLanding(el) {
       }
     });
 
-  // ── Botão principal JOGAR ──────────────────────────────────────────────────
-  document.getElementById('btn-jogar-gratis').addEventListener('click', function(e) {
-    // Se onclick foi sobrescrito pelo bloco acima (demo_mode=false), não entra aqui
-    const btn = e.currentTarget;
-    if (btn.onclick) return; // já tem handler customizado
-
-    btn.disabled = true;
+  // ── Função para Iniciar Jogo Demo ──────────────────────────────────────────
+  function iniciarDemoJogo() {
     sessionStorage.setItem('partida_atual', JSON.stringify({
       partida_id:           'demo',
       valor_entrada:        5,
@@ -350,8 +339,13 @@ function renderLanding(el) {
       modo_demo:            true,
     }));
     navigate('#jogo');
-    btn.disabled = false;
-  });
+  }
+  window.iniciarDemoJogo = iniciarDemoJogo;
+
+  const btnJogar = document.getElementById('btn-jogar-gratis');
+  if (btnJogar) {
+    btnJogar.onclick = iniciarDemoJogo;
+  }
 
   // ── Partículas de bolinhas no fundo ────────────────────────────────────────
   (function initParticles() {
