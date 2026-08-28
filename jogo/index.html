@@ -17,7 +17,7 @@
       height: 100%;
       overflow: hidden;
       font-family: 'Arial', sans-serif;
-      background: #090812;
+      background: #FFE4EE;
     }
 
     #game-container {
@@ -28,7 +28,8 @@
       height: 100%;
       touch-action: none;
       -webkit-tap-highlight-color: transparent;
-      background: radial-gradient(circle at 50% 30%, #1a102f 0%, #090812 100%) !important;
+       background: url('bg.jpg') no-repeat center center !important;
+       background-size: cover !important;
       opacity: 1 !important;
     }
 
@@ -36,7 +37,11 @@
       display: block;
       width: 100%;
       height: 100%;
-      background: transparent !important;
+      background: 
+    linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)),
+    url('bg.jpg') no-repeat center center !important;
+
+  background-size: cover !important;
       opacity: 1 !important;
     }
 
@@ -50,7 +55,63 @@
     }
 
     #start-screen {
-      display: none !important;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 4, 22, 0.45);
+      pointer-events: auto;
+      z-index: 10;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #start-screen.hidden { display: none; }
+
+    #start-screen::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(to top, rgba(10,4,22,.3) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    #start-screen p {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow:
+        0 0 12px rgba(232,60,160,.9),
+        0 0 30px rgba(232,60,160,.5),
+        0 2px 8px rgba(0,0,0,.6);
+      margin-bottom: 12px;
+      text-align: center;
+      animation: glow-title 2.2s ease-in-out infinite;
+    }
+
+    @keyframes glow-title {
+      0%, 100% { text-shadow: 0 0 10px rgba(232,60,160,.7), 0 0 24px rgba(232,60,160,.35), 0 2px 8px rgba(0,0,0,.6); }
+      50%       { text-shadow: 0 0 22px rgba(232,60,160,1),  0 0 55px rgba(168,85,247,.6),  0 2px 8px rgba(0,0,0,.6); }
+    }
+
+    #start-screen .arrow {
+      font-size: 28px;
+      color: rgba(255,255,255,.75);
+      text-shadow: 0 0 12px rgba(232,60,160,.8);
+      animation: bounce-arrow 1.4s ease-in-out infinite;
+    }
+
+    @keyframes bounce-arrow {
+      0%, 100% { transform: translateY(0);    opacity: .6; }
+      50%       { transform: translateY(10px); opacity: 1;  }
     }
 
     #score {
