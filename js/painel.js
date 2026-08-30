@@ -956,26 +956,45 @@ function renderPainel(el) {
         background: var(--pnl-pink,#FF6B9D); color: #fff; border-color: var(--pnl-pink,#FF6B9D);
       }
 
-      /* ── Input ─────────────────────────────────────────────────── */
       .pnl-input-wrap {
-        display: flex; align-items: center; gap: 8px;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
         background: rgba(0, 0, 0, 0.25) !important;
         border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 16px !important;
-        padding: 0 16px; margin-bottom: 16px;
+        padding: 0 16px !important;
+        margin-bottom: 16px !important;
         transition: all 0.25s ease;
+        max-width: 280px !important;
+        width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
       }
       .pnl-input-wrap:focus-within {
         border-color: var(--pnl-pink,#FF6B9D) !important;
         box-shadow: 0 0 10px rgba(255, 107, 157, 0.3) !important;
         background: rgba(0, 0, 0, 0.35) !important;
       }
-      .pnl-input-prefix { font-size: 28px; font-weight: 700; color: rgba(255,255,255,.5); flex-shrink: 0; }
+      .pnl-input-prefix {
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        flex-shrink: 0 !important;
+      }
       .pnl-input {
-        ; background: transparent; border: none; outline: none;
-        color: #fff; font-size: 20px; font-weight: 700; font-family: inherit;
-        padding: 14px 0;
-        color-scheme: dark;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        color: #fff !important;
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        font-family: inherit !important;
+        padding: 14px 0 !important;
+        width: 110px !important;
+        text-align: left !important;
+        color-scheme: dark !important;
       }
       .pnl-input::placeholder { color: rgba(255,255,255,.25); }
       .pnl-input:-webkit-autofill,
