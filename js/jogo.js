@@ -280,6 +280,42 @@ function renderJogo(container) {
         to   { transform:translateY(0);     opacity:1; }
       }
       
+      @keyframes floatUpFade {
+        0% { transform: translate(-50%, -30%) scale(0.6); opacity: 0; }
+        15% { transform: translate(-50%, -70%) scale(1.35); opacity: 1; }
+        50% { transform: translate(-50%, -100%) scale(1.15); opacity: 1; }
+        100% { transform: translate(-50%, -160%) scale(0.85); opacity: 0; }
+      }
+      @keyframes hudScaleBump {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.28); filter: drop-shadow(0 0 10px #00C97A); }
+        100% { transform: scale(1); }
+      }
+      .hud-bump-active {
+        animation: hudScaleBump 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+      }
+      .floating-money-text {
+        position: fixed;
+        left: 50%;
+        top: 45%;
+        transform: translate(-50%, -50%);
+        font-family: Arial, sans-serif;
+        font-size: 36px;
+        font-weight: 900;
+        color: #31f368;
+        text-shadow: 0 0 12px rgba(49,243,104,0.95), 0 0 25px rgba(0,0,0,0.98);
+        pointer-events: none;
+        z-index: 1500;
+        animation: floatUpFade 0.85s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+      }
+      @keyframes pulseGoldGlow {
+        0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.55), 0 4px 15px rgba(0,0,0,0.5); }
+        50% { box-shadow: 0 0 55px rgba(255,215,0,0.95), 0 4px 25px rgba(255,165,0,0.7); }
+      }
+      #btn-resgatar.glow-active {
+        animation: pulseGold 1.2s ease-in-out infinite, pulseGoldGlow 1.8s ease-in-out infinite !important;
+      }
+      
       @media (max-width: 480px) {
         #hud-container {
           padding: 8px 10px 14px !important;
@@ -363,6 +399,17 @@ function renderJogo(container) {
     _plataformasPassadas: 0,
   };
 
+  // Função para criar o texto flutuante de ganho financeiro na tela
+  function spawnFloatingText(valor) {
+    const wrapper = document.getElementById('jogo-wrapper');
+    if (!wrapper) return;
+    const el = document.createElement('div');
+    el.className = 'floating-money-text';
+    el.textContent = `+R$ ${parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    wrapper.appendChild(el);
+    setTimeout(() => el.remove(), 850);
+  }
+
   // ── Ativar a partida após o iframe carregar ───────────────────────────────
   function ativarPartida() {
     plataformasPassadas = 0;
@@ -379,6 +426,24 @@ function renderJogo(container) {
       plataformasPassadas = n;
       valorAcumulado      = parseFloat((n * parseFloat(valor_por_plataforma)).toFixed(2));
       atualizarHUD(n, valorAcumulado);
+
+      if (n > 0) {
+        // 1. Pop-up flutuante
+        spawnFloatingText(valor_por_plataforma);
+        
+        // 2. Haptic feedback
+        if (navigator.vibrate) {
+          navigator.vibrate(12);
+        }
+        
+        // 3. Efeito bump no HUD de saldo
+        const acEl = document.getElementById('hud-acumulado');
+        if (acEl) {
+          acEl.classList.remove('hud-bump-active');
+          void acEl.offsetWidth;
+          acEl.classList.add('hud-bump-active');
+        }
+      }
 
       if (!metaAtingida && valorAcumulado >= parseFloat(valor_meta)) {
         metaAtingida = true;
@@ -463,7 +528,8 @@ function renderJogo(container) {
     const hint = document.getElementById('btn-resgatar-hint');
     btn.textContent = `🏆 RESGATAR ${formatMoney(valor)}`;
     btn.style.display = 'block';
-    btn.style.animation = 'jogoPopIn .4s ease, pulseGold 1.2s ease-in-out .4s infinite';
+    btn.classList.add('glow-active');
+    btn.style.animation = 'jogoPopIn .4s ease, pulseGold 1.2s ease-in-out .4s infinite, pulseGoldGlow 1.8s ease-in-out .4s infinite';
     hint.style.display = 'block';
     // Borda dourada no HUD
     document.getElementById('hud-container').style.borderBottom = '2px solid rgba(255,215,0,.5)';
@@ -475,7 +541,9 @@ function renderJogo(container) {
   }
 
   function esconderBotaoResgatar() {
-    document.getElementById('btn-resgatar').style.display = 'none';
+    const btn = document.getElementById('btn-resgatar');
+    btn.style.display = 'none';
+    btn.classList.remove('glow-active');
     document.getElementById('btn-resgatar-hint').style.display = 'none';
   }
 
@@ -739,26 +807,58 @@ function renderJogo(container) {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext('2d');
-    const particles = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 6 + 3,
-      color: ['#FFD700','#FFA500','#FF6B9D','#00C97A','#4D9EFF'][Math.floor(Math.random() * 5)],
-      speed: Math.random() * 3 + 1,
-      wobble: Math.random() * 10,
-    }));
+    
+    const colors = ['#FFD700','#FFA500','#FF6B9D','#00C97A','#4D9EFF','#FF3366','#FFFF33'];
+    const particles = [];
+    
+    // Cria 220 partículas disparadas de dois canhões nas laterais inferiores
+    const totalParticles = 220;
+    for (let i = 0; i < totalParticles; i++) {
+      const isLeft = i % 2 === 0;
+      particles.push({
+        x: isLeft ? 0 : canvas.width,
+        y: canvas.height * 0.85,
+        w: Math.random() * 8 + 6,
+        h: Math.random() * 4 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (isLeft ? Math.random() * 12 + 8 : -(Math.random() * 12 + 8)),
+        vy: -(Math.random() * 16 + 14),
+        gravity: 0.35,
+        friction: 0.97,
+        rotation: Math.random() * 360,
+        rotationSpeed: Math.random() * 8 - 4,
+        wobble: Math.random() * 10,
+        wobbleSpeed: Math.random() * 0.1 + 0.05
+      });
+    }
+    
     let frames = 0;
     const anim = () => {
-      if (++frames > 200) { canvas.style.display = 'none'; return; }
+      if (++frames > 250) { canvas.style.display = 'none'; return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       particles.forEach(p => {
-        p.y += p.speed;
-        p.x += Math.sin(frames * 0.05 + p.wobble) * 1.5;
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+        p.vy += p.gravity;
+        
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        p.x += Math.sin(frames * p.wobbleSpeed + p.wobble) * 0.8;
+        p.rotation += p.rotationSpeed;
+        
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
         ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
+        
+        const scaleY = Math.sin(frames * 0.15 + p.wobble);
+        ctx.fillRect(-p.w, -p.h * scaleY, p.w * 2, p.h * 2 * scaleY);
+        
+        ctx.restore();
       });
+      
       requestAnimationFrame(anim);
     };
     anim();
