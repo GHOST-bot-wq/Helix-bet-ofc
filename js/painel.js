@@ -796,13 +796,13 @@ function renderPainel(el) {
 
       .pnl-tips-wrap {
         display: flex; align-items: center; gap: 12px;
-        margin: 18px 14px 16px;
-        padding: 14px 18px;
-        background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.03) 100%);
-        border: 1px solid rgba(255,255,255,.13);
-        border-left: 3px solid var(--green, #00c97a);
-        border-radius: 14px;
-        box-shadow: 0 4px 20px rgba(0,0,0,.18);
+        margin: 14px 12px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-left: 3px solid var(--green, #00c97a) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
         min-height: 48px;
         overflow: hidden;
       }
@@ -826,9 +826,12 @@ function renderPainel(el) {
 
       /* ── Game card ─────────────────────────────────────────────── */
       .pnl-game-card {
-        background: linear-gradient(145deg, #062012 0%, #0a2818 40%, #152008 100%);
+        background: rgba(18, 14, 32, 0.72) !important;
+        border: 1px solid rgba(255, 107, 157, 0.2) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 15px rgba(255, 107, 157, 0.15) !important;
         margin: 0 12px 16px; border-radius: 24px; padding: 22px 20px 20px;
-        box-shadow: 0 12px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,107,157,.15);
         position: relative; overflow: hidden;
       }
       .pnl-game-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
@@ -917,8 +920,15 @@ function renderPainel(el) {
         align-items: center; line-height: 1.2;
         touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none;
       }
-      .pnl-quick:hover, .pnl-quick.active {
-        background: var(--pnl-pink,#FF6B9D); color: #fff; border-color: var(--pnl-pink,#FF6B9D);
+      .pnl-quick:hover {
+        background: var(--pnl-pink,#FF6B9D) !important; color: #fff !important; border-color: var(--pnl-pink,#FF6B9D) !important;
+      }
+      .pnl-quick.active {
+        background: #FACC15 !important;
+        color: #000000 !important;
+        border-color: #FACC15 !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 12px rgba(250, 204, 21, 0.45) !important;
       }
       .dep-quick-badge {
         font-size: 9px; font-weight: 800; color: #22c55e; letter-spacing: .2px;
@@ -949,11 +959,17 @@ function renderPainel(el) {
       /* ── Input ─────────────────────────────────────────────────── */
       .pnl-input-wrap {
         display: flex; align-items: center; gap: 8px;
-        background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15);
-        border-radius: 14px; padding: 0 14px; margin-bottom: 14px;
-        transition: border-color .2s;
+        background: rgba(0, 0, 0, 0.25) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        padding: 0 16px; margin-bottom: 16px;
+        transition: all 0.25s ease;
       }
-      .pnl-input-wrap:focus-within { border-color: var(--pnl-pink,#FF6B9D); }
+      .pnl-input-wrap:focus-within {
+        border-color: var(--pnl-pink,#FF6B9D) !important;
+        box-shadow: 0 0 10px rgba(255, 107, 157, 0.3) !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+      }
       .pnl-input-prefix { font-size: 28px; font-weight: 700; color: rgba(255,255,255,.5); flex-shrink: 0; }
       .pnl-input {
         ; background: transparent; border: none; outline: none;
@@ -975,8 +991,10 @@ function renderPainel(el) {
       /* ── Meta preview ──────────────────────────────────────────── */
       .pnl-meta-row {
         display: grid; grid-template-columns: repeat(3,1fr);
-        background: rgba(255,255,255,.06); border-radius: 12px;
-        padding: 12px; margin-bottom: 14px; gap: 8px;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 16px !important;
+        padding: 12px; margin-bottom: 16px; gap: 8px;
       }
       .pnl-meta-item { text-align: center; }
       .pnl-meta-lbl { font-size: 10px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
@@ -999,14 +1017,25 @@ function renderPainel(el) {
       /* ── Play button ───────────────────────────────────────────── */
       .pnl-play-btn {
         width: 100%; padding: 16px; border-radius: 50px; border: none;
-        background: linear-gradient(135deg,#00C97A,#00a864);
-        color: #fff; font-size: 16px; font-weight: 800; cursor: pointer;
+        background: linear-gradient(135deg, #00E676, #00B0FF) !important;
+        color: #fff; font-size: 16px; font-weight: 900; cursor: pointer;
         font-family: inherit; display: flex; align-items: center; justify-content: center;
-        gap: 10px; box-shadow: 0 6px 24px rgba(0,201,122,.4);
-        transition: all .2s; letter-spacing: .5px;
+        gap: 10px; box-shadow: 0 0 20px rgba(0, 230, 118, 0.45) !important;
+        transition: all 0.25s ease; letter-spacing: 0.8px;
+        text-transform: uppercase;
+        animation: pulsePlayBtn 2s infinite alternate;
       }
-      .pnl-play-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,201,122,.5); }
+      .pnl-play-btn:hover:not(:disabled) { 
+        filter: brightness(1.15); 
+        transform: translateY(-2px) scale(1.01); 
+        box-shadow: 0 0 30px rgba(0, 230, 118, 0.65) !important; 
+      }
       .pnl-play-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+      
+      @keyframes pulsePlayBtn {
+        0% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.3); }
+        100% { box-shadow: 0 0 30px rgba(0, 230, 118, 0.6); }
+      }
 
       /* ── Card genérico ─────────────────────────────────────────── */
       .pnl-card {
@@ -1055,24 +1084,29 @@ function renderPainel(el) {
       /* ── Bottom nav ────────────────────────────────────────────── */
       .pnl-bottom-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
-        min-height: 40px;
-        padding-bottom: max(env(safe-area-inset-bottom), 10px);
-        background: rgba(13,0,32,0.92);
-        border-top: 1px solid rgba(255,255,255,.08);
+        min-height: 56px;
+        padding-bottom: max(env(safe-area-inset-bottom), 6px);
+        background: rgba(9, 8, 18, 0.94) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
         display: flex; align-items: stretch; z-index: 200;
-        box-shadow: 0 -4px 24px rgba(0,0,0,.4);
-        backdrop-filter: blur(12px);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
       }
       .pnl-nav-item {
         flex: 1; display: flex; flex-direction: column; align-items: center;
-        justify-content: center; gap: 1px; background: none; border: none;
-        cursor: pointer; color: rgba(255,255,255,.3); font-size: 8px; font-weight: 600;
-        font-family: inherit; transition: color .2s; padding: 4px 0 2px;
+        justify-content: center; gap: 2px; background: none; border: none;
+        cursor: pointer; color: rgba(255, 255, 255, 0.45) !important; font-size: 10px !important; font-weight: 700;
+        font-family: inherit; transition: all 0.2s ease; padding: 6px 0;
       }
-      .pnl-nav-item svg { width: 16px; height: 16px; stroke: currentColor; }
-      .pnl-nav-item:hover { color: var(--pnl-pink,#FF6B9D); }
-      .pnl-nav-active { color: var(--pnl-pink,#FF6B9D) !important; }
-      .pnl-nav-item:last-child { color: rgba(255,128,153,.6); }
+      .pnl-nav-item svg { width: 18px !important; height: 18px !important; stroke: currentColor; transition: transform 0.2s ease; }
+      .pnl-nav-item:hover, .pnl-nav-item.pnl-nav-active {
+        color: var(--pnl-pink, #FF6B9D) !important;
+      }
+      .pnl-nav-item.pnl-nav-active svg {
+        transform: translateY(-2px) scale(1.08);
+      }
+      .pnl-nav-item:last-child { color: rgba(255, 128, 153, 0.75) !important; }
 
       /* ── Modais ────────────────────────────────────────────────── */
       .pnl-modal-bg {
