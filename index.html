@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=1.0.1">
+  <!-- Preconnect ao CDNjs para acelerar DNS de assets externos -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <!-- Preload da imagem de background principal para exibição instantânea -->
+  <link rel="preload" href="images/game-bg.png" as="image">
 </head>
 <body>
 
@@ -30,21 +34,21 @@
   </div>
 
   <!-- QR Code local (sem depender de APIs externas) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <!-- Utilitários antes de tudo -->
-  <script src="js/utils.js"></script>
-  <script src="js/api.js"></script>
+  <script src="js/utils.js" defer></script>
+  <script src="js/api.js" defer></script>
 
   <!-- Páginas -->
-  <script src="js/landing.js?v=3.1.2"></script>
-  <script src="js/login.js?v=3.1.2"></script>
-  <script src="js/cadastro.js?v=3.1.2"></script>
-  <script src="js/painel.js?v=3.1.2"></script>
-  <script src="js/jogo.js?v=3.1.2"></script>
+  <script src="js/landing.js?v=3.1.2" defer></script>
+  <script src="js/login.js?v=3.1.2" defer></script>
+  <script src="js/cadastro.js?v=3.1.2" defer></script>
+  <script src="js/painel.js?v=3.1.2" defer></script>
+  <script src="js/jogo.js?v=3.1.2" defer></script>
 
   <!-- Router — carregado por último -->
-  <script src="js/app.js?v=3.1.2"></script>
+  <script src="js/app.js?v=3.1.2" defer></script>
 
 </body>
 </html>
