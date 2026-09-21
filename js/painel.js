@@ -10,7 +10,7 @@ function renderPainel(el) {
       <header class="pnl-header">
         <div class="pnl-header-inner">
           <div class="pnl-logo brand-logo-wrap">
-            <img class="brand-logo-img" src="" alt="logo" style="display:none;height:32px;object-fit:contain"/>
+            <img class="brand-logo-img" src="" alt="logo" style="display:none;height:32px;object-fit:contain" onerror="this.style.display='none';const p=this.closest('.brand-logo-wrap');if(p){const i=p.querySelector('.brand-logo-icon'),n=p.querySelector('.brand-name');if(i)i.style.display='';if(n)n.style.display='';}"/>
             <div class="pnl-logo-icon brand-logo-icon">🌀</div>
             <span class="brand-name">HelixWin</span>
           </div>
@@ -2342,9 +2342,23 @@ function renderPainel(el) {
     let current = 0;
     let autoTimer = null;
 
+    function sanitizeBannerUrl(url) {
+      if (!url) return '/images/banner-principal.jpg';
+      if (url.includes('postimg') || url.includes('postimage') || url.includes('t1-foco-pg.site')) {
+        return '/images/banner-principal.jpg';
+      }
+      return url;
+    }
+
     function renderBanners(list) {
-      banners = list;
-      if (!banners.length) { wrap.style.display = 'none'; return; }
+      banners = (list || []).map(b => ({
+        ...b,
+        url: sanitizeBannerUrl(b.url)
+      })).filter(b => !!b.url);
+
+      if (!banners.length) {
+        banners = [{ url: '/images/banner-principal.jpg', link: '' }];
+      }
       wrap.style.display = 'block';
 
       // Hide arrows if only 1 banner
@@ -2355,7 +2369,7 @@ function renderPainel(el) {
         <div style="min-width:100%;position:relative" data-idx="${i}">
           <img src="${b.url}" alt="Banner ${i+1}"
             style="width:100%;display:block;height:auto;border-radius:0"
-            onerror="this.parentElement.style.display='none'" />
+            onerror="if(this.src && !this.src.includes('banner-principal.jpg')){ this.src='/images/banner-principal.jpg'; } else { this.parentElement.style.display='none'; }" />
         </div>`).join('');
 
       dots.innerHTML = banners.map((_, i) =>

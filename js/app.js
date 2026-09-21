@@ -15,8 +15,12 @@ async function applyBranding(force = false) {
   const nome    = cfg.site_nome    || 'HelixWin';
   const suporte = cfg.site_suporte || '';
   const promo   = cfg.site_promo   || '';
-  const logoUrl    = cfg.site_logo_url    || null;
+  let logoUrl      = cfg.site_logo_url    || null;
   const faviconUrl = cfg.site_favicon_url || null;
+
+  if (logoUrl && (logoUrl.includes('t1-foco-pg.site') || logoUrl.includes('postimg') || logoUrl.includes('postimage'))) {
+    logoUrl = '/uploads/banners/banner_1775065856_35912429.png';
+  }
 
   document.querySelectorAll('.brand-name').forEach(el => { el.textContent = nome; });
   document.title = `${nome} - Gire e ganhe`;
@@ -42,7 +46,15 @@ async function applyBranding(force = false) {
     const iconEl = wrap.querySelector('.brand-logo-icon');
     const nameEl = wrap.querySelector('.brand-name');
     if (logoUrl) {
-      if (imgEl)  { imgEl.src = logoUrl + '?t=' + Date.now(); imgEl.style.display = ''; }
+      if (imgEl) {
+        imgEl.onerror = function() {
+          this.style.display = 'none';
+          if (iconEl) iconEl.style.display = '';
+          if (nameEl) { nameEl.style.display = ''; nameEl.textContent = nome; }
+        };
+        imgEl.src = logoUrl + (logoUrl.startsWith('data:') ? '' : '?t=' + Date.now());
+        imgEl.style.display = '';
+      }
       if (iconEl) iconEl.style.display = 'none';
       if (nameEl) nameEl.style.display = 'none';
     } else {

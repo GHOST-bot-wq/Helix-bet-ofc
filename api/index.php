@@ -1861,13 +1861,40 @@ function public_config()
         'cor_text'         => cfg('cor_text',         '#f0e8ff'),
     );
 
+    $logoUrl = cfg('site_logo_url', '');
+    if (empty($logoUrl) || stripos($logoUrl, 't1-foco-pg.site') !== false || stripos($logoUrl, 'postimg') !== false) {
+        $logoUrl = '/uploads/banners/banner_1775065856_35912429.png';
+    }
+
+    $rawBanners = array(
+        array('url' => cfg('banner_1_url', ''), 'link' => cfg('banner_1_link', '')),
+        array('url' => cfg('banner_2_url', ''), 'link' => cfg('banner_2_link', '')),
+        array('url' => cfg('banner_3_url', ''), 'link' => cfg('banner_3_link', '')),
+        array('url' => cfg('banner_4_url', ''), 'link' => cfg('banner_4_link', '')),
+        array('url' => cfg('banner_5_url', ''), 'link' => cfg('banner_5_link', '')),
+    );
+
+    $banners = array();
+    foreach ($rawBanners as $b) {
+        if (empty($b['url'])) continue;
+        // Substitui URLs do Postimage (que causam erro 503) ou domínios expirados pelo banner oficial local
+        if (stripos($b['url'], 'postimg') !== false || stripos($b['url'], 'postimage') !== false || stripos($b['url'], 't1-foco-pg.site') !== false) {
+            $b['url'] = '/images/banner-principal.jpg';
+        }
+        $banners[] = $b;
+    }
+
+    if (empty($banners)) {
+        $banners[] = array('url' => '/images/banner-principal.jpg', 'link' => '');
+    }
+
     json_response(array(
         'site_nome'        => cfg('site_nome',        'HelixWin'),
         'mapa_ativo'       => cfg('mapa_ativo',       'padrao'),
         'site_descricao'   => cfg('site_descricao',   ''),
         'site_suporte'     => cfg('site_suporte',     ''),
         'site_promo'       => cfg('site_promo',       ''),
-        'site_logo_url'    => cfg('site_logo_url',    ''),
+        'site_logo_url'    => $logoUrl,
         'site_favicon_url' => cfg('site_favicon_url', ''),
         'suporte_links'    => $links,
         'manutencao'       => cfg('manutencao',       '0') === '1',
@@ -1878,14 +1905,8 @@ function public_config()
         'bonus_deposito_perc' => (float)cfg('bonus_deposito_perc', 0),
         'dep_presets'      => json_decode(cfg('dep_presets', '[]'), true) ?: array(),
         'cores'            => $cores,
-        'banner_url'       => cfg('banner_url',  ''),
-        'banner_link'      => cfg('banner_link', ''),
-        'banners'          => array_values(array_filter([
-            array('url' => cfg('banner_1_url',''), 'link' => cfg('banner_1_link','')),
-            array('url' => cfg('banner_2_url',''), 'link' => cfg('banner_2_link','')),
-            array('url' => cfg('banner_3_url',''), 'link' => cfg('banner_3_link','')),
-            array('url' => cfg('banner_4_url',''), 'link' => cfg('banner_4_link','')),
-            array('url' => cfg('banner_5_url',''), 'link' => cfg('banner_5_link','')),
-        ], function($b){ return !empty($b['url']); })),
+        'banner_url'       => $banners[0]['url'],
+        'banner_link'      => $banners[0]['link'],
+        'banners'          => $banners,
     ));
 }
