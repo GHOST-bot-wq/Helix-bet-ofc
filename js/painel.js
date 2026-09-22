@@ -111,6 +111,11 @@ function renderPainel(el) {
           <div class="pnl-tips-text" id="pnl-tips-text"></div>
         </div>
 
+        <!-- ── Banner promocional ───────────────────────────────────── -->
+        <div style="width:100%;margin-bottom:12px;">
+          <img src="/images/banner-promo.jpg.png" alt="Promoção" style="width:100%;border-radius:12px;display:block;" />
+        </div>
+
         <!-- ── Game card ─────────────────────────────────────────────── -->
         <div class="pnl-game-card">
 

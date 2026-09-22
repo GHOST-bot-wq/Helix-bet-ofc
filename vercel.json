@@ -2,7 +2,34 @@
   "version": 2,
   "cleanUrls": true,
   "functions": {
-    "api/*.php": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/admin.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/test.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/akadpay_pixout_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/akadpay_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/amplopay_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/expfypay_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/pixup_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/royalbanking_webhook.php": {
+      "runtime": "vercel-php@0.9.0"
+    },
+    "api/vizzionpay_webhook.php": {
       "runtime": "vercel-php@0.9.0"
     }
   },
